@@ -1,5 +1,5 @@
 env.info( '*** MOOSE STATIC INCLUDE START *** ' ) 
-env.info( 'Moose Generation Timestamp: 20170302_2326' ) 
+env.info( 'Moose Generation Timestamp: 20170308_2139' ) 
 local base = _G
 
 Include = {}
@@ -2790,37 +2790,69 @@ function UTILS.DoString( s )
     return false, err
   end
 end
---- This module contains the BASE class.
+--- **Core** - BASE forms **the basis of the MOOSE framework**. Each class within the MOOSE framework derives from BASE.
 -- 
--- 1) @{#BASE} class
--- =================
--- The @{#BASE} class is the super class for all the classes defined within MOOSE.
+-- ![Banner Image](..\Presentations\BASE\Dia1.JPG)
 -- 
--- It handles:
+-- ===
 -- 
---   * The construction and inheritance of child classes.
---   * The tracing of objects during mission execution within the **DCS.log** file, under the **"Saved Games\DCS\Logs"** folder.
+-- # 1) @{#BASE} class
 -- 
--- Note: Normally you would not use the BASE class unless you are extending the MOOSE framework with new classes.
+-- All classes within the MOOSE framework are derived from the @{#BASE} class. 
+--  
+-- BASE provides facilities for :
+-- 
+--   * The construction and inheritance of MOOSE classes.
+--   * The class naming and numbering system.
+--   * The class hierarchy search system.
+--   * The tracing of information or objects during mission execution for debuggin purposes.
+--   * The subscription to DCS events for event handling in MOOSE objects.
+-- 
+-- Note: The BASE class is an abstract class and is not meant to be used directly.
 -- 
 -- ## 1.1) BASE constructor
 -- 
--- Any class derived from BASE, must use the @{Base#BASE.New) constructor within the @{Base#BASE.Inherit) method. 
+-- Any class derived from BASE, will use the @{Base#BASE.New} constructor embedded in the @{Base#BASE.Inherit} method. 
 -- See an example at the @{Base#BASE.New} method how this is done.
 -- 
--- ## 1.2) BASE Trace functionality
+-- ## 1.2) Trace information for debugging
 -- 
 -- The BASE class contains trace methods to trace progress within a mission execution of a certain object.
--- Note that these trace methods are inherited by each MOOSE class interiting BASE.
--- As such, each object created from derived class from BASE can use the tracing functions to trace its execution.
+-- These trace methods are inherited by each MOOSE class interiting BASE, soeach object created from derived class from BASE can use the tracing methods to trace its execution.
 -- 
--- ### 1.2.1) Tracing functions
+-- Any type of information can be passed to these tracing methods. See the following examples:
+-- 
+--     self:E( "Hello" )
+-- 
+-- Result in the word "Hello" in the dcs.log.
+-- 
+--     local Array = { 1, nil, "h", { "a","b" }, "x" }
+--     self:E( Array )
+--     
+-- Results with the text [1]=1,[3]="h",[4]={[1]="a",[2]="b"},[5]="x"} in the dcs.log.   
+-- 
+--     local Object1 = "Object1"
+--     local Object2 = 3
+--     local Object3 = { Object 1, Object 2 }
+--     self:E( { Object1, Object2, Object3 } )
+--     
+-- Results with the text [1]={[1]="Object",[2]=3,[3]={[1]="Object",[2]=3}} in the dcs.log.
+--     
+--     local SpawnObject = SPAWN:New( "Plane" )
+--     local GroupObject = GROUP:FindByName( "Group" )
+--     self:E( { Spawn = SpawnObject, Group = GroupObject } )
+-- 
+-- Results with the text [1]={Spawn={....),Group={...}} in the dcs.log.  
+-- 
+-- Below a more detailed explanation of the different method types for tracing.
+-- 
+-- ### 1.2.1) Tracing methods categories
 --
--- There are basically 3 types of tracing methods available within BASE:
+-- There are basically 3 types of tracing methods available:
 -- 
---   * @{#BASE.F}: Trace the beginning of a function and its given parameters. An F is indicated at column 44 in the DCS.log file.
---   * @{#BASE.T}: Trace further logic within a function giving optional variables or parameters. A T is indicated at column 44 in the DCS.log file.
---   * @{#BASE.E}: Trace an exception within a function giving optional variables or parameters. An E is indicated at column 44 in the DCS.log file. An exception will always be traced.
+--   * @{#BASE.F}: Used to trace the entrance of a function and its given parameters. An F is indicated at column 44 in the DCS.log file.
+--   * @{#BASE.T}: Used to trace further logic within a function giving optional variables or parameters. A T is indicated at column 44 in the DCS.log file.
+--   * @{#BASE.E}: Used to always trace information giving optional variables or parameters. An E is indicated at column 44 in the DCS.log file.
 -- 
 -- ### 1.2.2) Tracing levels
 --
@@ -2843,6 +2875,7 @@ end
 --   * Activate only the tracing of a certain class (name) through the @{#BASE.TraceClass}() method.
 --   * Activate only the tracing of a certain method of a certain class through the @{#BASE.TraceClassMethod}() method.
 --   * Activate only the tracing of a certain level through the @{#BASE.TraceLevel}() method.
+-- 
 -- ### 1.2.4) Check if tracing is on.
 -- 
 -- The method @{#BASE.IsTrace}() will validate if tracing is activated or not.
@@ -2856,7 +2889,7 @@ end
 -- 
 -- At first, the mission designer will need to **Subscribe** to a specific DCS event for the class.
 -- So, when the DCS event occurs, the class will be notified of that event.
--- There are two functions which you use to subscribe to or unsubscribe from an event.
+-- There are two methods which you use to subscribe to or unsubscribe from an event.
 -- 
 --   * @{#BASE.HandleEvent}(): Subscribe to a DCS Event.
 --   * @{#BASE.UnHandleEvent}(): Unsubscribe from a DCS Event.
@@ -2906,10 +2939,12 @@ end
 -- 
 -- ## 1.5) All objects derived from BASE can have "States"
 -- 
--- A mechanism is in place in MOOSE, that allows to let the objects administer **states**. 
--- States are essentially properties of objects, which are identified by a **Key** and a **Value**.
--- The method @{#BASE.SetState}() can be used to set a Value with a reference Key to the object.
--- To **read or retrieve** a state Value based on a Key, use the @{#BASE.GetState} method.
+-- A mechanism is in place in MOOSE, that allows to let the objects administer **states**.  
+-- States are essentially properties of objects, which are identified by a **Key** and a **Value**.  
+-- 
+-- The method @{#BASE.SetState}() can be used to set a Value with a reference Key to the object.  
+-- To **read or retrieve** a state Value based on a Key, use the @{#BASE.GetState} method.  
+-- 
 -- These two methods provide a very handy way to keep state at long lasting processes.
 -- Values can be stored within the objects, and later retrieved or changed when needed.
 -- There is one other important thing to note, the @{#BASE.SetState}() and @{#BASE.GetState} methods
@@ -2917,9 +2952,9 @@ end
 -- Thus, if the state is to be set for the same object as the object for which the method is used, then provide the same
 -- object name to the method.
 -- 
--- ## 1.10) BASE Inheritance (tree) support
+-- ## 1.10) Inheritance
 -- 
--- The following methods are available to support inheritance:
+-- The following methods are available to implement inheritance
 -- 
 --   * @{#BASE.Inherit}: Inherits from a class.
 --   * @{#BASE.GetParent}: Returns the parent object from the object it is handling, or nil if there is no parent object.
@@ -2984,7 +3019,17 @@ FORMATION = {
 
 
 
--- @todo need to investigate if the deepCopy is really needed... Don't think so.
+--- BASE constructor.  
+-- 
+-- This is an example how to use the BASE:New() constructor in a new class definition when inheriting from BASE.
+--  
+--     function EVENT:New()
+--       local self = BASE:Inherit( self, BASE:New() ) -- #EVENT
+--       return self
+--     end
+--       
+-- @param #BASE self
+-- @return #BASE
 function BASE:New()
   local self = routines.utils.deepCopy( self ) -- Create a new self instance
 	local MetaTable = {}
@@ -3045,7 +3090,12 @@ function BASE:Inherit( Child, Parent )
 	return Child
 end
 
---- This is the worker method to retrieve the Parent class.
+--- This is the worker method to retrieve the Parent class.  
+-- Note that the Parent class must be passed to call the parent class method.
+-- 
+--     self:GetParent(self):ParentMethod()
+--     
+--     
 -- @param #BASE self
 -- @param #BASE Child is the Child class from which the Parent class needs to be retrieved.
 -- @return #BASE
@@ -4019,8 +4069,7 @@ end
 
 
 
---- This core module models the dispatching of DCS Events to subscribed MOOSE classes,
--- following a given priority.
+--- **Core** - EVENT models DCS **event dispatching** using a **publish-subscribe** model.
 -- 
 -- ![Banner Image](..\Presentations\EVENT\Dia1.JPG)
 -- 
@@ -4085,6 +4134,13 @@ end
 -- 
 --   * @{Base#BASE.HandleEvent}(): Subscribe to a DCS Event.
 --   * @{Base#BASE.UnHandleEvent}(): Unsubscribe from a DCS Event.
+--   
+-- Note that for a UNIT, the event will be handled **for that UNIT only**!
+-- Note that for a GROUP, the event will be handled **for all the UNITs in that GROUP only**!
+-- 
+-- For all objects of other classes, the subscribed events will be handled for **all UNITs within the Mission**!
+-- So if a UNIT within the mission has the subscribed event for that object, 
+-- then the object event handler will receive the event for that UNIT!
 -- 
 -- ### 1.3.2 Event Handling of DCS Events
 -- 
@@ -4131,7 +4187,7 @@ end
 -- 
 -- # 3) EVENTDATA type
 -- 
--- The EVENTDATA contains all the fields that are populated with event information before 
+-- The @{Event#EVENTDATA} structure contains all the fields that are populated with event information before 
 -- an Event Handler method is being called by the event dispatcher.
 -- The Event Handler received the EVENTDATA object as a parameter, and can be used to investigate further the different events.
 -- There are basically 4 main categories of information stored in the EVENTDATA structure:
@@ -4140,6 +4196,17 @@ end
 --    * Target Unit data: Several fields documenting the target unit related to the event.
 --    * Weapon data: Certain events populate weapon information.
 --    * Place data: Certain events populate place information.
+-- 
+--      --- This function is an Event Handling function that will be called when Tank1 is Dead.
+--      -- EventData is an EVENTDATA structure.
+--      -- We use the EventData.IniUnit to smoke the tank Green.
+--      -- @param Wrapper.Unit#UNIT self 
+--      -- @param Core.Event#EVENTDATA EventData
+--      function Tank1:OnEventDead( EventData )
+--
+--        EventData.IniUnit:SmokeGreen()
+--      end
+-- 
 -- 
 -- Find below an overview which events populate which information categories:
 -- 
@@ -4175,7 +4242,9 @@ end
 -- 
 -- Hereby the change log:
 -- 
---   * 2016-02-07: Did a complete revision of the Event Handing API and underlying mechanisms.
+--   * 2017-03-07: Added the correct event dispatching in case the event is subscribed by a GROUP.
+-- 
+--   * 2017-02-07: Did a complete revision of the Event Handing API and underlying mechanisms.
 -- 
 -- ===
 -- 
@@ -4188,10 +4257,6 @@ end
 --   * [**FlightControl**](https://forums.eagle.ru/member.php?u=89536): Design & Programming & documentation.
 --
 -- @module Event
-
--- TODO: Need to update the EVENTDATA documentation with IniPlayerName and TgtPlayerName
--- TODO: Need to update the EVENTDATA documentation with IniObjectCategory and TgtObjectCategory
-
 
 
 --- The EVENT structure
@@ -4241,35 +4306,35 @@ EVENTS = {
 -- @type EVENTDATA
 -- @field #number id The identifier of the event.
 -- 
--- @field Dcs.DCSUnit#Unit                  initiator         (UNIT/STATIC/SCENERY) The initiating @{Dcs.DCSUnit#Unit} or @{Dcs.DCSStaticObject#StaticObject}.
--- @field Dcs.DCSObject#Object.Category     IniObjectCategory (UNIT/STATIC/SCENERY) The initiator object category ( Object.Category.UNIT or Object.Category.STATIC ).
--- @field Dcs.DCSUnit#Unit                  IniDCSUnit        (UNIT/STATIC) The initiating @{Dcs.DCSUnit#Unit} or @{Dcs.DCSStaticObject#StaticObject}.
--- @field #string                           IniDCSUnitName    (UNIT/STATIC) The initiating Unit name.
--- @field Wrapper.Unit#UNIT                 IniUnit           (UNIT/STATIC) The initiating MOOSE wrapper @{Wrapper.Unit#UNIT} of the initiator Unit object.
--- @field #string                           IniUnitName       (UNIT/STATIC) The initiating UNIT name (same as IniDCSUnitName).
--- @field Dcs.DCSGroup#Group                IniDCSGroup       (UNIT) The initiating {Dcs.DCSGroup#Group}.
--- @field #string                           IniDCSGroupName   (UNIT) The initiating Group name.
--- @field Wrapper.Group#GROUP               IniGroup          (UNIT) The initiating MOOSE wrapper @{Wrapper.Group#GROUP} of the initiator Group object.
--- @field #string                           IniGroupName      (UNIT) The initiating GROUP name (same as IniDCSGroupName).
--- @field #string                           IniPlayerName     (UNIT) The name of the initiating player in case the Unit is a client or player slot.
--- @field Dcs.DCScoalition#coalition.side   IniCoalition      (UNIT) The coalition of the initiator.
--- @field Dcs.DCSUnit#Unit.Category         IniCategory       (UNIT) The category of the initiator.
--- @field #string                           IniTypeName       (UNIT) The type name of the initiator.
+-- @field Dcs.DCSUnit#Unit initiator (UNIT/STATIC/SCENERY) The initiating @{Dcs.DCSUnit#Unit} or @{Dcs.DCSStaticObject#StaticObject}.
+-- @field Dcs.DCSObject#Object.Category IniObjectCategory (UNIT/STATIC/SCENERY) The initiator object category ( Object.Category.UNIT or Object.Category.STATIC ).
+-- @field Dcs.DCSUnit#Unit IniDCSUnit (UNIT/STATIC) The initiating @{DCSUnit#Unit} or @{DCSStaticObject#StaticObject}.
+-- @field #string IniDCSUnitName (UNIT/STATIC) The initiating Unit name.
+-- @field Wrapper.Unit#UNIT IniUnit (UNIT/STATIC) The initiating MOOSE wrapper @{Unit#UNIT} of the initiator Unit object.
+-- @field #string IniUnitName (UNIT/STATIC) The initiating UNIT name (same as IniDCSUnitName).
+-- @field Dcs.DCSGroup#Group IniDCSGroup (UNIT) The initiating {DCSGroup#Group}.
+-- @field #string IniDCSGroupName (UNIT) The initiating Group name.
+-- @field Wrapper.Group#GROUP IniGroup (UNIT) The initiating MOOSE wrapper @{Group#GROUP} of the initiator Group object.
+-- @field #string IniGroupName UNIT) The initiating GROUP name (same as IniDCSGroupName).
+-- @field #string IniPlayerName (UNIT) The name of the initiating player in case the Unit is a client or player slot.
+-- @field Dcs.DCScoalition#coalition.side IniCoalition (UNIT) The coalition of the initiator.
+-- @field Dcs.DCSUnit#Unit.Category IniCategory (UNIT) The category of the initiator.
+-- @field #string IniTypeName (UNIT) The type name of the initiator.
 -- 
--- @field Dcs.DCSUnit#Unit                  target            (UNIT/STATIC) The target @{Dcs.DCSUnit#Unit} or @{Dcs.DCSStaticObject#StaticObject}.
--- @field Dcs.DCSObject#Object.Category     TgtObjectCategory       (UNIT/STATIC) The target object category ( Object.Category.UNIT or Object.Category.STATIC ).
--- @field Dcs.DCSUnit#Unit                  TgtDCSUnit        (UNIT/STATIC) The target @{Dcs.DCSUnit#Unit} or @{Dcs.DCSStaticObject#StaticObject}.
--- @field #string                           TgtDCSUnitName    (UNIT/STATIC) The target Unit name.
--- @field Wrapper.Unit#UNIT                 TgtUnit           (UNIT/STATIC) The target MOOSE wrapper @{Wrapper.Unit#UNIT} of the target Unit object.
--- @field #string                           TgtUnitName       (UNIT/STATIC) The target UNIT name (same as TgtDCSUnitName).
--- @field Dcs.DCSGroup#Group                TgtDCSGroup       (UNIT) The target {Dcs.DCSGroup#Group}.
--- @field #string                           TgtDCSGroupName   (UNIT) The target Group name.
--- @field Wrapper.Group#GROUP               TgtGroup          (UNIT) The target MOOSE wrapper @{Wrapper.Group#GROUP} of the target Group object.
--- @field #string                           TgtGroupName      (UNIT) The target GROUP name (same as TgtDCSGroupName).
--- @field #string                           TgtPlayerName     (UNIT) The name of the target player in case the Unit is a client or player slot.
--- @field Dcs.DCScoalition#coalition.side   TgtCoalition      (UNIT) The coalition of the target.
--- @field Dcs.DCSUnit#Unit.Category         TgtCategory       (UNIT) The category of the target.
--- @field #string                           TgtTypeName       (UNIT) The type name of the target.
+-- @field Dcs.DCSUnit#Unit target (UNIT/STATIC) The target @{Dcs.DCSUnit#Unit} or @{DCSStaticObject#StaticObject}.
+-- @field Dcs.DCSObject#Object.Category TgtObjectCategory (UNIT/STATIC) The target object category ( Object.Category.UNIT or Object.Category.STATIC ).
+-- @field Dcs.DCSUnit#Unit TgtDCSUnit (UNIT/STATIC) The target @{DCSUnit#Unit} or @{DCSStaticObject#StaticObject}.
+-- @field #string TgtDCSUnitName (UNIT/STATIC) The target Unit name.
+-- @field Wrapper.Unit#UNIT TgtUnit (UNIT/STATIC) The target MOOSE wrapper @{Unit#UNIT} of the target Unit object.
+-- @field #string TgtUnitName (UNIT/STATIC) The target UNIT name (same as TgtDCSUnitName).
+-- @field Dcs.DCSGroup#Group TgtDCSGroup (UNIT) The target {DCSGroup#Group}.
+-- @field #string TgtDCSGroupName (UNIT) The target Group name.
+-- @field Wrapper.Group#GROUP TgtGroup (UNIT) The target MOOSE wrapper @{Group#GROUP} of the target Group object.
+-- @field #string TgtGroupName (UNIT) The target GROUP name (same as TgtDCSGroupName).
+-- @field #string TgtPlayerName (UNIT) The name of the target player in case the Unit is a client or player slot.
+-- @field Dcs.DCScoalition#coalition.side TgtCoalition (UNIT) The coalition of the target.
+-- @field Dcs.DCSUnit#Unit.Category TgtCategory (UNIT) The category of the target.
+-- @field #string TgtTypeName (UNIT) The type name of the target.
 -- 
 -- @field weapon The weapon used during the event.
 -- @field Weapon
@@ -4453,8 +4518,9 @@ function EVENT:Remove( EventClass, EventID  )
   self.Events[EventID][EventPriority][EventClass] = nil
 end
 
---- Removes an Events entry for a Unit
+--- Removes an Events entry for a UNIT.
 -- @param #EVENT self
+-- @param #string UnitName The name of the UNIT.
 -- @param Core.Base#BASE EventClass The self instance of the class for which the event is.
 -- @param Dcs.DCSWorld#world.event EventID
 -- @return #EVENT.Events
@@ -4464,7 +4530,22 @@ function EVENT:RemoveForUnit( UnitName, EventClass, EventID  )
   local EventClass = EventClass
   local EventPriority = EventClass:GetEventPriority()
   local Event = self.Events[EventID][EventPriority][EventClass]
-  Event.IniUnit[UnitName] = nil
+  Event.EventUnit[UnitName] = nil
+end
+
+--- Removes an Events entry for a GROUP.
+-- @param #EVENT self
+-- @param #string GroupName The name of the GROUP.
+-- @param Core.Base#BASE EventClass The self instance of the class for which the event is.
+-- @param Dcs.DCSWorld#world.event EventID
+-- @return #EVENT.Events
+function EVENT:RemoveForGroup( GroupName, EventClass, EventID  )
+  self:F3( { EventClass, _EVENTMETA[EventID].Text } )
+
+  local EventClass = EventClass
+  local EventPriority = EventClass:GetEventPriority()
+  local Event = self.Events[EventID][EventPriority][EventClass]
+  Event.EventGroup[GroupName] = nil
 end
 
 --- Clears all event subscriptions for a @{Base#BASE} derived object.
@@ -4515,23 +4596,43 @@ function EVENT:OnEventGeneric( EventFunction, EventClass, EventID )
 end
 
 
---- Set a new listener for an S_EVENT_X event
+--- Set a new listener for an S_EVENT_X event for a UNIT.
 -- @param #EVENT self
--- @param #string EventDCSUnitName
--- @param #function EventFunction The function to be called when the event occurs for the unit.
+-- @param #string UnitName The name of the UNIT.
+-- @param #function EventFunction The function to be called when the event occurs for the GROUP.
 -- @param Core.Base#BASE EventClass The self instance of the class for which the event is.
 -- @param EventID
 -- @return #EVENT
-function EVENT:OnEventForUnit( EventDCSUnitName, EventFunction, EventClass, EventID )
-  self:F2( EventDCSUnitName )
+function EVENT:OnEventForUnit( UnitName, EventFunction, EventClass, EventID )
+  self:F2( UnitName )
 
   local Event = self:Init( EventID, EventClass )
-  if not Event.IniUnit then
-    Event.IniUnit = {}
+  if not Event.EventUnit then
+    Event.EventUnit = {}
   end
-  Event.IniUnit[EventDCSUnitName] = {}
-  Event.IniUnit[EventDCSUnitName].EventFunction = EventFunction
-  Event.IniUnit[EventDCSUnitName].EventClass = EventClass
+  Event.EventUnit[UnitName] = {}
+  Event.EventUnit[UnitName].EventFunction = EventFunction
+  Event.EventUnit[UnitName].EventClass = EventClass
+  return self
+end
+
+--- Set a new listener for an S_EVENT_X event for a GROUP.
+-- @param #EVENT self
+-- @param #string GroupName The name of the GROUP.
+-- @param #function EventFunction The function to be called when the event occurs for the GROUP.
+-- @param Core.Base#BASE EventClass The self instance of the class for which the event is.
+-- @param EventID
+-- @return #EVENT
+function EVENT:OnEventForGroup( GroupName, EventFunction, EventClass, EventID )
+  self:F2( GroupName )
+
+  local Event = self:Init( EventID, EventClass )
+  if not Event.EventGroup then
+    Event.EventGroup = {}
+  end
+  Event.EventGroup[GroupName] = {}
+  Event.EventGroup[GroupName].EventFunction = EventFunction
+  Event.EventGroup[GroupName].EventClass = EventClass
   return self
 end
 
@@ -5058,7 +5159,6 @@ do -- OnPlayerLeaveUnit
 end
 
 
-
 --- @param #EVENT self
 -- @param #EVENTDATA Event
 function EVENT:onEvent( Event )
@@ -5094,7 +5194,9 @@ function EVENT:onEvent( Event )
         if Event.IniDCSGroup and Event.IniDCSGroup:isExist() then
           Event.IniDCSGroupName = Event.IniDCSGroup:getName()
           Event.IniGroup = GROUP:FindByName( Event.IniDCSGroupName )
-          self:E( { IniGroup = Event.IniGroup } )
+          if Event.IniGroup then
+            Event.IniGroupName = Event.IniDCSGroupName
+          end
         end
         Event.IniPlayerName = Event.IniDCSUnit:getPlayerName()
         Event.IniCoalition = Event.IniDCSUnit:getCoalition()
@@ -5106,7 +5208,7 @@ function EVENT:onEvent( Event )
         Event.IniDCSUnit = Event.initiator
         Event.IniDCSUnitName = Event.IniDCSUnit:getName()
         Event.IniUnitName = Event.IniDCSUnitName
-        Event.IniUnit = STATIC:FindByName( Event.IniDCSUnitName )
+        Event.IniUnit = STATIC:FindByName( Event.IniDCSUnitName, false )
         Event.IniCoalition = Event.IniDCSUnit:getCoalition()
         Event.IniCategory = Event.IniDCSUnit:getDesc().category
         Event.IniTypeName = Event.IniDCSUnit:getTypeName()
@@ -5135,6 +5237,10 @@ function EVENT:onEvent( Event )
         Event.TgtDCSGroupName = ""
         if Event.TgtDCSGroup and Event.TgtDCSGroup:isExist() then
           Event.TgtDCSGroupName = Event.TgtDCSGroup:getName()
+          Event.TgtGroup = GROUP:FindByName( Event.TgtDCSGroupName )
+          if Event.TgtGroup then
+            Event.TgtGroupName = Event.TgtDCSGroupName
+          end
         end
         Event.TgtPlayerName = Event.TgtDCSUnit:getPlayerName()
         Event.TgtCoalition = Event.TgtDCSUnit:getCoalition()
@@ -5180,72 +5286,165 @@ function EVENT:onEvent( Event )
       
         -- Okay, we got the event from DCS. Now loop the SORTED self.EventSorted[] table for the received Event.id, and for each EventData registered, check if a function needs to be called.
         for EventClass, EventData in pairs( self.Events[Event.id][EventPriority] ) do
+
+          Event.IniGroup = GROUP:FindByName( Event.IniDCSGroupName )
+          Event.TgtGroup = GROUP:FindByName( Event.TgtDCSGroupName )
         
           -- If the EventData is for a UNIT, the call directly the EventClass EventFunction for that UNIT.
-          if Event.IniDCSUnitName and EventData.IniUnit and EventData.IniUnit[Event.IniDCSUnitName] then 
+          if ( Event.IniDCSUnitName and EventData.EventUnit and EventData.EventUnit[Event.IniDCSUnitName] ) or
+             ( Event.TgtDCSUnitName and EventData.EventUnit and EventData.EventUnit[Event.TgtDCSUnitName] ) then 
 
-            -- First test if a EventFunction is Set, otherwise search for the default function
-            if EventData.IniUnit[Event.IniDCSUnitName].EventFunction then
-          
-              self:E( { "Calling EventFunction for Class ", EventClass:GetClassNameAndID(), ", Unit ", Event.IniUnitName, EventPriority } )
-              Event.IniGroup = GROUP:FindByName( Event.IniDCSGroupName )
-              
-              local Result, Value = xpcall( 
-                function() 
-                  return EventData.IniUnit[Event.IniDCSUnitName].EventFunction( EventClass, Event ) 
-                end, ErrorHandler )
+            if EventData.EventUnit[Event.IniDCSUnitName] then
 
-            else
-
-              -- There is no EventFunction defined, so try to find if a default OnEvent function is defined on the object.
-              local EventFunction = EventClass[ _EVENTMETA[Event.id].Event ]
-              if EventFunction and type( EventFunction ) == "function" then
-                
-                -- Now call the default event function.
-                self:E( { "Calling " .. _EVENTMETA[Event.id].Event .. " for Class ", EventClass:GetClassNameAndID(), EventPriority } )
-                Event.IniGroup = GROUP:FindByName( Event.IniDCSGroupName )
+              -- First test if a EventFunction is Set, otherwise search for the default function
+              if EventData.EventUnit[Event.IniDCSUnitName].EventFunction then
+            
+                self:E( { "Calling EventFunction for UNIT ", EventClass:GetClassNameAndID(), ", Unit ", Event.IniUnitName, EventPriority } )
                 
                 local Result, Value = xpcall( 
                   function() 
-                    return EventFunction( EventClass, Event ) 
+                    return EventData.EventUnit[Event.IniDCSUnitName].EventFunction( EventClass, Event ) 
                   end, ErrorHandler )
+  
+              else
+  
+                -- There is no EventFunction defined, so try to find if a default OnEvent function is defined on the object.
+                local EventFunction = EventClass[ _EVENTMETA[Event.id].Event ]
+                if EventFunction and type( EventFunction ) == "function" then
+                  
+                  -- Now call the default event function.
+                  self:E( { "Calling " .. _EVENTMETA[Event.id].Event .. " for Class ", EventClass:GetClassNameAndID(), EventPriority } )
+                  
+                  local Result, Value = xpcall( 
+                    function() 
+                      return EventFunction( EventClass, Event ) 
+                    end, ErrorHandler )
+                end
               end
-              
+            end
+            
+            if EventData.EventUnit[Event.TgtDCSUnitName] then
+
+              -- First test if a EventFunction is Set, otherwise search for the default function
+              if EventData.EventUnit[Event.TgtDCSUnitName].EventFunction then
+            
+                self:E( { "Calling EventFunction for UNIT ", EventClass:GetClassNameAndID(), ", Unit ", Event.TgtUnitName, EventPriority } )
+                
+                local Result, Value = xpcall( 
+                  function() 
+                    return EventData.EventUnit[Event.TgtDCSUnitName].EventFunction( EventClass, Event ) 
+                  end, ErrorHandler )
+  
+              else
+  
+                -- There is no EventFunction defined, so try to find if a default OnEvent function is defined on the object.
+                local EventFunction = EventClass[ _EVENTMETA[Event.id].Event ]
+                if EventFunction and type( EventFunction ) == "function" then
+                  
+                  -- Now call the default event function.
+                  self:E( { "Calling " .. _EVENTMETA[Event.id].Event .. " for Class ", EventClass:GetClassNameAndID(), EventPriority } )
+                  
+                  local Result, Value = xpcall( 
+                    function() 
+                      return EventFunction( EventClass, Event ) 
+                    end, ErrorHandler )
+                end
+              end
             end
           
           else
-          
-            -- If the EventData is not bound to a specific unit, then call the EventClass EventFunction.
-            -- Note that here the EventFunction will need to implement and determine the logic for the relevant source- or target unit, or weapon.
-            if Event.IniDCSUnit and not EventData.IniUnit then
-            
-              if EventClass == EventData.EventClass then
-                
+
+            -- If the EventData is for a GROUP, the call directly the EventClass EventFunction for the UNIT in that GROUP.
+            if ( Event.IniDCSUnitName and Event.IniDCSGroupName and Event.IniGroupName and EventData.EventGroup and EventData.EventGroup[Event.IniGroupName] ) or
+               ( Event.TgtDCSUnitName and Event.TgtDCSGroupName and Event.TgtGroupName and EventData.EventGroup and EventData.EventGroup[Event.TgtGroupName] ) then 
+
+              if EventData.EventGroup[Event.IniGroupName] then  
                 -- First test if a EventFunction is Set, otherwise search for the default function
-                if EventData.EventFunction then
-                  
-                  -- There is an EventFunction defined, so call the EventFunction.
-                  self:E( { "Calling EventFunction for Class ", EventClass:GetClassNameAndID(), EventPriority } )
-                  Event.IniGroup = GROUP:FindByName( Event.IniDCSGroupName )
+                if EventData.EventGroup[Event.IniGroupName].EventFunction then
               
+                  self:E( { "Calling EventFunction for GROUP ", EventClass:GetClassNameAndID(), ", Unit ", Event.IniUnitName, EventPriority } )
+                  
                   local Result, Value = xpcall( 
                     function() 
-                      return EventData.EventFunction( EventClass, Event ) 
+                      return EventData.EventGroup[Event.IniGroupName].EventFunction( EventClass, Event ) 
                     end, ErrorHandler )
+    
                 else
-                  
+    
                   -- There is no EventFunction defined, so try to find if a default OnEvent function is defined on the object.
                   local EventFunction = EventClass[ _EVENTMETA[Event.id].Event ]
                   if EventFunction and type( EventFunction ) == "function" then
                     
                     -- Now call the default event function.
-                    self:E( { "Calling " .. _EVENTMETA[Event.id].Event .. " for Class ", EventClass:GetClassNameAndID(), EventPriority } )
-                    Event.IniGroup = GROUP:FindByName( Event.IniDCSGroupName )
+                    self:E( { "Calling " .. _EVENTMETA[Event.id].Event .. " for GROUP ", EventClass:GetClassNameAndID(), EventPriority } )
                     
                     local Result, Value = xpcall( 
                       function() 
                         return EventFunction( EventClass, Event ) 
                       end, ErrorHandler )
+                  end
+                end
+              end
+
+              if EventData.EventGroup[Event.TgtGroupName] then  
+                if EventData.EventGroup[Event.TgtGroupName].EventFunction then
+              
+                  self:E( { "Calling EventFunction for GROUP ", EventClass:GetClassNameAndID(), ", Unit ", Event.TgtUnitName, EventPriority } )
+                  
+                  local Result, Value = xpcall( 
+                    function() 
+                      return EventData.EventGroup[Event.TgtGroupName].EventFunction( EventClass, Event ) 
+                    end, ErrorHandler )
+    
+                else
+    
+                  -- There is no EventFunction defined, so try to find if a default OnEvent function is defined on the object.
+                  local EventFunction = EventClass[ _EVENTMETA[Event.id].Event ]
+                  if EventFunction and type( EventFunction ) == "function" then
+                    
+                    -- Now call the default event function.
+                    self:E( { "Calling " .. _EVENTMETA[Event.id].Event .. " for GROUP ", EventClass:GetClassNameAndID(), EventPriority } )
+                    
+                    local Result, Value = xpcall( 
+                      function() 
+                        return EventFunction( EventClass, Event ) 
+                      end, ErrorHandler )
+                  end
+                end
+              end
+              
+            else
+          
+              -- If the EventData is not bound to a specific unit, then call the EventClass EventFunction.
+              -- Note that here the EventFunction will need to implement and determine the logic for the relevant source- or target unit, or weapon.
+              if Event.IniDCSUnit and not EventData.EventUnit then
+              
+                if EventClass == EventData.EventClass then
+                  
+                  -- First test if a EventFunction is Set, otherwise search for the default function
+                  if EventData.EventFunction then
+                    
+                    -- There is an EventFunction defined, so call the EventFunction.
+                    self:E( { "Calling EventFunction for Class ", EventClass:GetClassNameAndID(), EventPriority } )
+                
+                    local Result, Value = xpcall( 
+                      function() 
+                        return EventData.EventFunction( EventClass, Event ) 
+                      end, ErrorHandler )
+                  else
+                    
+                    -- There is no EventFunction defined, so try to find if a default OnEvent function is defined on the object.
+                    local EventFunction = EventClass[ _EVENTMETA[Event.id].Event ]
+                    if EventFunction and type( EventFunction ) == "function" then
+                      
+                      -- Now call the default event function.
+                      self:E( { "Calling " .. _EVENTMETA[Event.id].Event .. " for Class ", EventClass:GetClassNameAndID(), EventPriority } )
+                      
+                      local Result, Value = xpcall( 
+                        function() 
+                          return EventFunction( EventClass, Event ) 
+                        end, ErrorHandler )
+                    end
                   end
                 end
               end
@@ -5274,7 +5473,7 @@ function EVENTHANDLER:New()
   self = BASE:Inherit( self, BASE:New() ) -- #EVENTHANDLER
   return self
 end
---- This module contains the MENU classes.
+--- **Core** -- MENU_ classes model the definition of **hierarchical menu structures** and **commands for players** within a mission.
 -- 
 -- ===
 -- 
@@ -6166,7 +6365,9 @@ do
 
 end
 
---- This core module contains the ZONE classes, inherited from @{Zone#ZONE_BASE}.
+--- **Core** - ZONE classes define **zones** within your mission of **various forms**, with **various capabilities**.
+-- 
+-- ===
 -- 
 -- There are essentially two core functions that zones accomodate:
 -- 
@@ -6339,7 +6540,6 @@ end
 -- ===
 -- 
 -- @module Zone
--- @author FlightControl
 
 
 --- The ZONE_BASE class
@@ -6436,6 +6636,12 @@ function ZONE_BASE:GetBoundingSquare()
   return nil
 end
 
+--- Bound the zone boundaries with a tires.
+-- @param #ZONE_BASE self
+function ZONE_BASE:BoundZone()
+  self:F2()
+
+end
 
 --- Smokes the zone boundaries in a color.
 -- @param #ZONE_BASE self
@@ -6496,7 +6702,7 @@ ZONE_RADIUS = {
 -- @param Dcs.DCSTypes#Distance Radius The radius of the zone.
 -- @return #ZONE_RADIUS self
 function ZONE_RADIUS:New( ZoneName, Vec2, Radius )
-	local self = BASE:Inherit( self, ZONE_BASE:New( ZoneName ) )
+	local self = BASE:Inherit( self, ZONE_BASE:New( ZoneName ) ) -- #ZONE_RADIUS
 	self:F( { ZoneName, Vec2, Radius } )
 
 	self.Radius = Radius
@@ -6504,6 +6710,46 @@ function ZONE_RADIUS:New( ZoneName, Vec2, Radius )
 	
 	return self
 end
+
+--- Bounds the zone with tires.
+-- @param #ZONE_RADIUS self
+-- @param #number Points (optional) The amount of points in the circle.
+-- @return #ZONE_RADIUS self
+function ZONE_RADIUS:BoundZone( Points )
+
+  local Point = {}
+  local Vec2 = self:GetVec2()
+
+  Points = Points and Points or 360
+
+  local Angle
+  local RadialBase = math.pi*2
+  
+  --
+  for Angle = 0, 360, (360 / Points ) do
+    local Radial = Angle * RadialBase / 360
+    Point.x = Vec2.x + math.cos( Radial ) * self:GetRadius()
+    Point.y = Vec2.y + math.sin( Radial ) * self:GetRadius()
+    
+    local Tire = {
+        ["country"] = "USA", 
+        ["category"] = "Fortifications",
+        ["canCargo"] = false,
+        ["shape_name"] = "H-tyre_B_WF",
+        ["type"] = "Black_Tyre_WF",
+        --["unitId"] = Angle + 10000,
+        ["y"] = Point.y,
+        ["x"] = Point.x,
+        ["name"] = string.format( "%s-Tire #%0d", self:GetName(), Angle ),
+        ["heading"] = 0,
+    } -- end of ["group"]
+
+    coalition.addStaticObject( country.id.USA, Tire )
+  end
+
+  return self
+end
+
 
 --- Smokes the zone boundaries in a color.
 -- @param #ZONE_RADIUS self
@@ -6928,6 +7174,50 @@ function ZONE_POLYGON_BASE:Flush()
 
   return self
 end
+
+--- Smokes the zone boundaries in a color.
+-- @param #ZONE_POLYGON_BASE self
+-- @return #ZONE_POLYGON_BASE self
+function ZONE_POLYGON_BASE:BoundZone( )
+
+  local i 
+  local j 
+  local Segments = 10
+  
+  i = 1
+  j = #self.Polygon
+  
+  while i <= #self.Polygon do
+    self:T( { i, j, self.Polygon[i], self.Polygon[j] } )
+    
+    local DeltaX = self.Polygon[j].x - self.Polygon[i].x
+    local DeltaY = self.Polygon[j].y - self.Polygon[i].y
+    
+    for Segment = 0, Segments do -- We divide each line in 5 segments and smoke a point on the line.
+      local PointX = self.Polygon[i].x + ( Segment * DeltaX / Segments )
+      local PointY = self.Polygon[i].y + ( Segment * DeltaY / Segments )
+      local Tire = {
+          ["country"] = "USA", 
+          ["category"] = "Fortifications",
+          ["canCargo"] = false,
+          ["shape_name"] = "H-tyre_B_WF",
+          ["type"] = "Black_Tyre_WF",
+          ["y"] = PointY,
+          ["x"] = PointX,
+          ["name"] = string.format( "%s-Tire #%0d", self:GetName(), ((i - 1) * Segments) + Segment ),
+          ["heading"] = 0,
+      } -- end of ["group"]
+  
+      coalition.addStaticObject( country.id.USA, Tire )
+      
+    end
+    j = i
+    i = i + 1
+  end
+
+  return self
+end
+
 
 
 --- Smokes the zone boundaries in a color.
@@ -7642,8 +7932,14 @@ function DATABASE:_EventOnBirth( Event )
   self:F2( { Event } )
 
   if Event.IniDCSUnit then
-    self:AddUnit( Event.IniDCSUnitName )
-    self:AddGroup( Event.IniDCSGroupName )
+    if Event.IniObjectCategory == 3 then
+      self:AddStatic( Event.IniDCSUnitName )    
+    else
+      if Event.IniObjectCategory == 1 then
+        self:AddUnit( Event.IniDCSUnitName )
+        self:AddGroup( Event.IniDCSGroupName )
+      end
+    end
     self:_EventOnPlayerEnterUnit( Event )
   end
 end
@@ -7656,9 +7952,16 @@ function DATABASE:_EventOnDeadOrCrash( Event )
   self:F2( { Event } )
 
   if Event.IniDCSUnit then
-    if self.UNITS[Event.IniDCSUnitName] then
-      self:DeleteUnit( Event.IniDCSUnitName )
-      -- add logic to correctly remove a group once all units are destroyed...
+    if Event.IniObjectCategory == 3 then
+      if self.STATICS[Event.IniDCSUnitName] then
+        self:DeleteStatic( Event.IniDCSUnitName )
+      end    
+    else
+      if Event.IniObjectCategory == 1 then
+        if self.UNITS[Event.IniDCSUnitName] then
+          self:DeleteUnit( Event.IniDCSUnitName )
+        end
+      end
     end
   end
 end
@@ -7671,11 +7974,13 @@ function DATABASE:_EventOnPlayerEnterUnit( Event )
   self:F2( { Event } )
 
   if Event.IniUnit then
-    self:AddUnit( Event.IniDCSUnitName )
-    self:AddGroup( Event.IniDCSGroupName )
-    local PlayerName = Event.IniUnit:GetPlayerName()
-    if not self.PLAYERS[PlayerName] then
-      self:AddPlayer( Event.IniUnitName, PlayerName )
+    if Event.IniObjectCategory == 1 then
+      self:AddUnit( Event.IniDCSUnitName )
+      self:AddGroup( Event.IniDCSGroupName )
+      local PlayerName = Event.IniUnit:GetPlayerName()
+      if not self.PLAYERS[PlayerName] then
+        self:AddPlayer( Event.IniUnitName, PlayerName )
+      end
     end
   end
 end
@@ -7688,9 +7993,11 @@ function DATABASE:_EventOnPlayerLeaveUnit( Event )
   self:F2( { Event } )
 
   if Event.IniUnit then
-    local PlayerName = Event.IniUnit:GetPlayerName()
-    if self.PLAYERS[PlayerName] then
-      self:DeletePlayer( PlayerName )
+    if Event.IniObjectCategory == 1 then
+      local PlayerName = Event.IniUnit:GetPlayerName()
+      if self.PLAYERS[PlayerName] then
+        self:DeletePlayer( PlayerName )
+      end
     end
   end
 end
@@ -7885,7 +8192,7 @@ end
 
 
 
---- This module contains the SET classes.
+--- **Core** - SET classes define **collections** of objects to perform **bulk actions** and logically **group** objects.
 -- 
 -- ===
 -- 
@@ -8425,7 +8732,7 @@ function SET_BASE:_EventOnBirth( Event )
   if Event.IniDCSUnit then
     local ObjectName, Object = self:AddInDatabase( Event )
     self:T3( ObjectName, Object )
-    if self:IsIncludeObject( Object ) then
+    if Object and self:IsIncludeObject( Object ) then
       self:Add( ObjectName, Object )
       --self:_EventOnPlayerEnterUnit( Event )
     end
@@ -8795,9 +9102,11 @@ end
 function SET_GROUP:AddInDatabase( Event )
   self:F3( { Event } )
 
-  if not self.Database[Event.IniDCSGroupName] then
-    self.Database[Event.IniDCSGroupName] = GROUP:Register( Event.IniDCSGroupName )
-    self:T3( self.Database[Event.IniDCSGroupName] )
+  if Event.IniObjectCategory == 1 then
+    if not self.Database[Event.IniDCSGroupName] then
+      self.Database[Event.IniDCSGroupName] = GROUP:Register( Event.IniDCSGroupName )
+      self:T3( self.Database[Event.IniDCSGroupName] )
+    end
   end
   
   return Event.IniDCSGroupName, self.Database[Event.IniDCSGroupName]
@@ -9220,9 +9529,11 @@ end
 function SET_UNIT:AddInDatabase( Event )
   self:F3( { Event } )
 
-  if not self.Database[Event.IniDCSUnitName] then
-    self.Database[Event.IniDCSUnitName] = UNIT:Register( Event.IniDCSUnitName )
-    self:T3( self.Database[Event.IniDCSUnitName] )
+  if Event.IniObjectCategory == 1 then
+    if not self.Database[Event.IniDCSUnitName] then
+      self.Database[Event.IniDCSUnitName] = UNIT:Register( Event.IniDCSUnitName )
+      self:T3( self.Database[Event.IniDCSUnitName] )
+    end
   end
   
   return Event.IniDCSUnitName, self.Database[Event.IniDCSUnitName]
@@ -10168,7 +10479,7 @@ function SET_AIRBASE:IsIncludeObject( MAirbase )
   self:T2( MAirbaseInclude )
   return MAirbaseInclude
 end
---- This module contains the POINT classes.
+--- **Core** - **POINT\_VEC** classes define an **extensive API** to **manage 3D points** in the simulation space.
 -- 
 -- 1) @{Point#POINT_VEC3} class, extends @{Base#BASE}
 -- ==================================================
@@ -10177,13 +10488,60 @@ end
 -- **Important Note:** Most of the functions in this section were taken from MIST, and reworked to OO concepts.
 -- In order to keep the credibility of the the author, I want to emphasize that the of the MIST framework was created by Grimes, who you can find on the Eagle Dynamics Forums.
 -- 
--- 1.1) POINT_VEC3 constructor
--- ---------------------------
+-- ## 1.1) POINT_VEC3 constructor
+-- 
 -- A new POINT_VEC3 instance can be created with:
 -- 
 --  * @{Point#POINT_VEC3.New}(): a 3D point.
 --  * @{Point#POINT_VEC3.NewFromVec3}(): a 3D point created from a @{DCSTypes#Vec3}.
---  
+-- 
+-- ## 1.2) Manupulate the X, Y, Z coordinates of the point
+-- 
+-- A POINT_VEC3 class works in 3D space. It contains internally an X, Y, Z coordinate.
+-- Methods exist to manupulate these coordinates.
+-- 
+-- The current X, Y, Z axis can be retrieved with the methods @{#POINT_VEC3.GetX}(), @{#POINT_VEC3.GetY}(), @{#POINT_VEC3.GetZ}() respectively.
+-- The methods @{#POINT_VEC3.SetX}(), @{#POINT_VEC3.SetY}(), @{#POINT_VEC3.SetZ}() change the respective axis with a new value.
+-- The current axis values can be changed by using the methods @{#POINT_VEC3.AddX}(), @{#POINT_VEC3.AddY}(), @{#POINT_VEC3.AddZ}()
+-- to add or substract a value from the current respective axis value.
+-- Note that the Set and Add methods return the current POINT_VEC3 object, so these manipulation methods can be chained... For example:
+-- 
+--      local Vec3 = PointVec3:AddX( 100 ):AddZ( 150 ):GetVec3()
+-- 
+-- ## 1.3) Create waypoints for routes
+-- 
+-- A POINT_VEC3 can prepare waypoints for Ground, Air and Naval groups to be embedded into a Route.
+-- 
+-- 
+-- ## 1.5) Smoke, flare, explode, illuminate
+-- 
+-- At the point a smoke, flare, explosion and illumination bomb can be triggered. Use the following methods:
+-- 
+-- ### 1.5.1) Smoke
+-- 
+--   * @{#POINT_VEC3.Smoke}(): To smoke the point in a certain color.
+--   * @{#POINT_VEC3.SmokeBlue}(): To smoke the point in blue.
+--   * @{#POINT_VEC3.SmokeRed}(): To smoke the point in red.
+--   * @{#POINT_VEC3.SmokeOrange}(): To smoke the point in orange.
+--   * @{#POINT_VEC3.SmokeWhite}(): To smoke the point in white.
+--   * @{#POINT_VEC3.SmokeGreen}(): To smoke the point in green.
+--   
+-- ### 1.5.2) Flare
+-- 
+--   * @{#POINT_VEC3.Flare}(): To flare the point in a certain color.
+--   * @{#POINT_VEC3.FlareRed}(): To flare the point in red.
+--   * @{#POINT_VEC3.FlareYellow}(): To flare the point in yellow.
+--   * @{#POINT_VEC3.FlareWhite}(): To flare the point in white.
+--   * @{#POINT_VEC3.FlareGreen}(): To flare the point in green.
+-- 
+-- ### 1.5.3) Explode
+-- 
+--   * @{#POINT_VEC3.Explosion}(): To explode the point with a certain intensity.
+--   
+-- ### 1.5.4) Illuminate
+-- 
+--   * @{#POINT_VEC3.IlluminationBomb}(): To illuminate the point.
+-- 
 --
 -- 2) @{Point#POINT_VEC2} class, extends @{Point#POINT_VEC3}
 -- =========================================================
@@ -10195,6 +10553,19 @@ end
 -- 
 --  * @{Point#POINT_VEC2.New}(): a 2D point, taking an additional height parameter.
 --  * @{Point#POINT_VEC2.NewFromVec2}(): a 2D point created from a @{DCSTypes#Vec2}.
+-- 
+-- ## 1.2) Manupulate the X, Altitude, Y coordinates of the 2D point
+-- 
+-- A POINT_VEC2 class works in 2D space, with an altitude setting. It contains internally an X, Altitude, Y coordinate.
+-- Methods exist to manupulate these coordinates.
+-- 
+-- The current X, Altitude, Y axis can be retrieved with the methods @{#POINT_VEC2.GetX}(), @{#POINT_VEC2.GetAlt}(), @{#POINT_VEC2.GetY}() respectively.
+-- The methods @{#POINT_VEC2.SetX}(), @{#POINT_VEC2.SetAlt}(), @{#POINT_VEC2.SetY}() change the respective axis with a new value.
+-- The current axis values can be changed by using the methods @{#POINT_VEC2.AddX}(), @{#POINT_VEC2.AddAlt}(), @{#POINT_VEC2.AddY}()
+-- to add or substract a value from the current respective axis value.
+-- Note that the Set and Add methods return the current POINT_VEC2 object, so these manipulation methods can be chained... For example:
+-- 
+--      local Vec2 = PointVec2:AddX( 100 ):AddY( 2000 ):GetVec2()
 -- 
 -- ===
 -- 
@@ -10208,9 +10579,12 @@ end
 -- 
 -- Hereby the change log:
 -- 
--- 2017-02-18: POINT_VEC3:**NewFromVec2( Vec2, LandHeightAdd )** added.
+-- 2017-03-03: POINT\_VEC3:**Explosion( ExplosionIntensity )** added.  
+-- 2017-03-03: POINT\_VEC3:**IlluminationBomb()** added.  
 -- 
--- 2016-08-12: POINT_VEC3:**Translate( Distance, Angle )** added.
+-- 2017-02-18: POINT\_VEC3:**NewFromVec2( Vec2, LandHeightAdd )** added.
+-- 
+-- 2016-08-12: POINT\_VEC3:**Translate( Distance, Angle )** added.
 -- 
 -- 2016-08-06: Made PointVec3 and Vec3, PointVec2 and Vec2 terminology used in the code consistent.
 -- 
@@ -10230,7 +10604,6 @@ end
 
 --- The POINT_VEC3 class
 -- @type POINT_VEC3
--- @extends Core.Base#BASE
 -- @field #number x The x coordinate in 3D space.
 -- @field #number y The y coordinate in 3D space.
 -- @field #number z The z coordiante in 3D space.
@@ -10239,6 +10612,7 @@ end
 -- @field #POINT_VEC3.RoutePointAltType RoutePointAltType
 -- @field #POINT_VEC3.RoutePointType RoutePointType
 -- @field #POINT_VEC3.RoutePointAction RoutePointAction
+-- @extends Core.Base#BASE
 POINT_VEC3 = {
   ClassName = "POINT_VEC3",
   Metric = true,
@@ -10257,9 +10631,9 @@ POINT_VEC3 = {
 
 --- The POINT_VEC2 class
 -- @type POINT_VEC2
--- @extends #POINT_VEC3
 -- @field Dcs.DCSTypes#Distance x The x coordinate in meters.
 -- @field Dcs.DCSTypes#Distance y the y coordinate in meters.
+-- @extends Core.Point#POINT_VEC3
 POINT_VEC2 = {
   ClassName = "POINT_VEC2",
 }
@@ -10366,21 +10740,57 @@ function POINT_VEC3:GetZ()
 end
 
 --- Set the x coordinate of the POINT_VEC3.
+-- @param #POINT_VEC3 self
 -- @param #number x The x coordinate.
+-- @return #POINT_VEC3
 function POINT_VEC3:SetX( x )
   self.x = x
+  return self
 end
 
 --- Set the y coordinate of the POINT_VEC3.
+-- @param #POINT_VEC3 self
 -- @param #number y The y coordinate.
+-- @return #POINT_VEC3
 function POINT_VEC3:SetY( y )
   self.y = y
+  return self
 end
 
 --- Set the z coordinate of the POINT_VEC3.
+-- @param #POINT_VEC3 self
 -- @param #number z The z coordinate.
+-- @return #POINT_VEC3
 function POINT_VEC3:SetZ( z )
   self.z = z
+  return self
+end
+
+--- Add to the x coordinate of the POINT_VEC3.
+-- @param #POINT_VEC3 self
+-- @param #number x The x coordinate value to add to the current x coodinate.
+-- @return #POINT_VEC3
+function POINT_VEC3:AddX( x )
+  self.x = self.x + x
+  return self
+end
+
+--- Add to the y coordinate of the POINT_VEC3.
+-- @param #POINT_VEC3 self
+-- @param #number y The y coordinate value to add to the current y coodinate.
+-- @return #POINT_VEC3
+function POINT_VEC3:AddY( y )
+  self.y = self.y + y
+  return self
+end
+
+--- Add to the z coordinate of the POINT_VEC3.
+-- @param #POINT_VEC3 self
+-- @param #number z The z coordinate value to add to the current z coodinate.
+-- @return #POINT_VEC3
+function POINT_VEC3:AddZ( z )
+  self.z = self.z +z
+  return self
 end
 
 --- Return a random Vec2 within an Outer Radius and optionally NOT within an Inner Radius of the POINT_VEC3.
@@ -10671,6 +11081,21 @@ function POINT_VEC3:RoutePointGround( Speed, Formation )
   return RoutePoint
 end
 
+--- Creates an explosion at the point of a certain intensity.
+-- @param #POINT_VEC3 self
+-- @param #number ExplosionIntensity
+function POINT_VEC3:Explosion( ExplosionIntensity )
+  self:F2( { ExplosionIntensity } )
+  trigger.action.explosion( self:GetVec3(), ExplosionIntensity )
+end
+
+--- Creates an illumination bomb at the point.
+-- @param #POINT_VEC3 self
+function POINT_VEC3:IlluminationBomb()
+  self:F2()
+  trigger.action.illuminationBomb( self:GetVec3() )
+end
+
 
 --- Smokes the point in a color.
 -- @param #POINT_VEC3 self
@@ -10836,15 +11261,57 @@ function POINT_VEC2:GetAlt()
 end
 
 --- Set the x coordinate of the POINT_VEC2.
+-- @param #POINT_VEC2 self
 -- @param #number x The x coordinate.
+-- @return #POINT_VEC2
 function POINT_VEC2:SetX( x )
   self.x = x
+  return self
 end
 
 --- Set the y coordinate of the POINT_VEC2.
+-- @param #POINT_VEC2 self
 -- @param #number y The y coordinate.
+-- @return #POINT_VEC2
 function POINT_VEC2:SetY( y )
   self.z = y
+  return self
+end
+
+--- Set the altitude of the POINT_VEC2.
+-- @param #POINT_VEC2 self
+-- @param #number Altitude The land altitude. If nothing (nil) is given, then the current land altitude is set.
+-- @return #POINT_VEC2
+function POINT_VEC2:SetAlt( Altitude )
+  self.y = Altitude or land.getHeight( { x = self.x, y = self.z } )
+  return self
+end
+
+--- Add to the x coordinate of the POINT_VEC2.
+-- @param #POINT_VEC2 self
+-- @param #number x The x coordinate.
+-- @return #POINT_VEC2
+function POINT_VEC2:AddX( x )
+  self.x = self.x + x
+  return self
+end
+
+--- Add to the y coordinate of the POINT_VEC2.
+-- @param #POINT_VEC2 self
+-- @param #number y The y coordinate.
+-- @return #POINT_VEC2
+function POINT_VEC2:AddY( y )
+  self.z = self.z + y
+  return self
+end
+
+--- Add to the current land height an altitude.
+-- @param #POINT_VEC2 self
+-- @param #number Altitude The Altitude to add. If nothing (nil) is given, then the current land altitude is set.
+-- @return #POINT_VEC2
+function POINT_VEC2:AddAlt( Altitude )
+  self.y = land.getHeight( { x = self.x, y = self.z } ) + Altitude or 0
+  return self
 end
 
 
@@ -10901,29 +11368,43 @@ end
 end
 
 
---- This module contains the MESSAGE class.
+--- **Core** - MESSAGE class takes are of the **real-time notifications** and **messages to players** during a simulation.
 -- 
--- 1) @{Message#MESSAGE} class, extends @{Base#BASE}
--- =================================================
+-- ![Banner Image](..\Presentations\MESSAGE\Dia1.JPG)
+-- 
+-- ===
+-- 
+-- # 1) @{Message#MESSAGE} class, extends @{Base#BASE}
+-- 
 -- Message System to display Messages to Clients, Coalitions or All.
 -- Messages are shown on the display panel for an amount of seconds, and will then disappear.
 -- Messages can contain a category which is indicating the category of the message.
 -- 
--- 1.1) MESSAGE construction methods
--- ---------------------------------
+-- ## 1.1) MESSAGE construction
+-- 
 -- Messages are created with @{Message#MESSAGE.New}. Note that when the MESSAGE object is created, no message is sent yet.
 -- To send messages, you need to use the To functions.
 -- 
--- 1.2) Send messages with MESSAGE To methods
--- ------------------------------------------
--- Messages are sent to:
+-- ## 1.2) Send messages to an audience
+-- 
+-- Messages are sent:
 --
---   * Clients with @{Message#MESSAGE.ToClient}.
---   * Coalitions with @{Message#MESSAGE.ToCoalition}.
---   * All Players with @{Message#MESSAGE.ToAll}.
+--   * To a @{Client} using @{Message#MESSAGE.ToClient}().
+--   * To a @{Group} using @{Message#MESSAGE.ToGroup}()
+--   * To a coalition using @{Message#MESSAGE.ToCoalition}().
+--   * To the red coalition using @{Message#MESSAGE.ToRed}().
+--   * To the blue coalition using @{Message#MESSAGE.ToBlue}().
+--   * To all Players using @{Message#MESSAGE.ToAll}().
+-- 
+-- ## 1.3) Send conditionally to an audience
+-- 
+-- Messages can be sent conditionally to an audience (when a condition is true):
 --   
+--   * To all players using @{Message#MESSAGE.ToAllIf}().
+--   * To a coalition using @{Message#MESSAGE.ToCoalitionIf}().
+-- 
+-- 
 -- @module Message
--- @author FlightControl
 
 --- The MESSAGE class
 -- @type MESSAGE
@@ -11132,85 +11613,8 @@ function MESSAGE:ToAllIf( Condition )
 
 	return self
 end
-
-
-
------ The MESSAGEQUEUE class
----- @type MESSAGEQUEUE
---MESSAGEQUEUE = {
---	ClientGroups = {},
---	CoalitionSides = {}
---}
---
---function MESSAGEQUEUE:New( RefreshInterval )
---	local self = BASE:Inherit( self, BASE:New() )
---	self:F( { RefreshInterval } )
---	
---	self.RefreshInterval = RefreshInterval
---
---	--self.DisplayFunction = routines.scheduleFunction( self._DisplayMessages, { self }, 0, RefreshInterval )
---  self.DisplayFunction = SCHEDULER:New( self, self._DisplayMessages, {}, 0, RefreshInterval )
---
---	return self
---end
---
------ This function is called automatically by the MESSAGEQUEUE scheduler.
---function MESSAGEQUEUE:_DisplayMessages()
---
---	-- First we display all messages that a coalition needs to receive... Also those who are not in a client (CA module clients...).
---	for CoalitionSideID, CoalitionSideData in pairs( self.CoalitionSides ) do
---		for MessageID, MessageData in pairs( CoalitionSideData.Messages ) do
---			if MessageData.MessageSent == false then
---				--trigger.action.outTextForCoalition( CoalitionSideID, MessageData.MessageCategory .. '\n' .. MessageData.MessageText:gsub("\n$",""):gsub("\n$",""), MessageData.MessageDuration )
---				MessageData.MessageSent = true
---			end
---			local MessageTimeLeft = ( MessageData.MessageTime + MessageData.MessageDuration ) - timer.getTime()
---			if MessageTimeLeft <= 0 then
---				MessageData = nil
---			end
---		end
---	end
---
---	-- Then we send the messages for each individual client, but also to be included are those Coalition messages for the Clients who belong to a coalition.
---	-- Because the Client messages will overwrite the Coalition messages (for that Client).
---	for ClientGroupName, ClientGroupData in pairs( self.ClientGroups ) do
---		for MessageID, MessageData in pairs( ClientGroupData.Messages ) do
---			if MessageData.MessageGroup == false then
---				trigger.action.outTextForGroup( Group.getByName(ClientGroupName):getID(), MessageData.MessageCategory .. '\n' .. MessageData.MessageText:gsub("\n$",""):gsub("\n$",""), MessageData.MessageDuration )
---				MessageData.MessageGroup = true
---			end
---			local MessageTimeLeft = ( MessageData.MessageTime + MessageData.MessageDuration ) - timer.getTime()
---			if MessageTimeLeft <= 0 then
---				MessageData = nil
---			end
---		end
---		
---		-- Now check if the Client also has messages that belong to the Coalition of the Client...
---		for CoalitionSideID, CoalitionSideData in pairs( self.CoalitionSides ) do
---			for MessageID, MessageData in pairs( CoalitionSideData.Messages ) do
---				local CoalitionGroup = Group.getByName( ClientGroupName )
---				if CoalitionGroup and CoalitionGroup:getCoalition() == CoalitionSideID then 
---					if MessageData.MessageCoalition == false then
---						trigger.action.outTextForGroup( Group.getByName(ClientGroupName):getID(), MessageData.MessageCategory .. '\n' .. MessageData.MessageText:gsub("\n$",""):gsub("\n$",""), MessageData.MessageDuration )
---						MessageData.MessageCoalition = true
---					end
---				end
---				local MessageTimeLeft = ( MessageData.MessageTime + MessageData.MessageDuration ) - timer.getTime()
---				if MessageTimeLeft <= 0 then
---					MessageData = nil
---				end
---			end
---		end
---	end
---	
---	return true
---end
---
------ The _MessageQueue object is created when the MESSAGE class module is loaded.
-----_MessageQueue = MESSAGEQUEUE:New( 0.5 )
---
---- This module contains the **FSM** (**F**inite **S**tate **M**achine) class and derived **FSM\_** classes.
--- ## Finite State Machines (FSM) are design patterns allowing efficient (long-lasting) processes and workflows.
+--- **Core** - The **FSM** (**F**inite **S**tate **M**achine) class and derived **FSM\_** classes 
+-- are design patterns allowing efficient (long-lasting) processes and workflows.
 -- 
 -- ![Banner Image](..\Presentations\FSM\Dia1.JPG)
 -- 
@@ -13042,7 +13446,7 @@ end
 -- 
 -- Find below a list of the **assigned task** methods:
 -- 
---   * @{#CONTROLLABLE.TaskAttackControllable}: (AIR) Attack a Controllable.
+--   * @{#CONTROLLABLE.TaskAttackGroup}: (AIR) Attack a Controllable.
 --   * @{#CONTROLLABLE.TaskAttackMapObject}: (AIR) Attacking the map object (building, structure, e.t.c).
 --   * @{#CONTROLLABLE.TaskAttackUnit}: (AIR) Attack the Unit.
 --   * @{#CONTROLLABLE.TaskBombing}: (AIR) Delivering weapon at the point on the ground.
@@ -13050,7 +13454,7 @@ end
 --   * @{#CONTROLLABLE.TaskEmbarking}: (AIR) Move the controllable to a Vec2 Point, wait for a defined duration and embark a controllable.
 --   * @{#CONTROLLABLE.TaskEmbarkToTransport}: (GROUND) Embark to a Transport landed at a location.
 --   * @{#CONTROLLABLE.TaskEscort}: (AIR) Escort another airborne controllable. 
---   * @{#CONTROLLABLE.TaskFAC_AttackControllable}: (AIR + GROUND) The task makes the controllable/unit a FAC and orders the FAC to control the target (enemy ground controllable) destruction.
+--   * @{#CONTROLLABLE.TaskFAC_AttackGroup}: (AIR + GROUND) The task makes the controllable/unit a FAC and orders the FAC to control the target (enemy ground controllable) destruction.
 --   * @{#CONTROLLABLE.TaskFireAtPoint}: (GROUND) Fire some or all ammunition at a VEC2 point.
 --   * @{#CONTROLLABLE.TaskFollow}: (AIR) Following another airborne controllable.
 --   * @{#CONTROLLABLE.TaskHold}: (GROUND) Hold ground controllable from moving.
@@ -13481,13 +13885,13 @@ end
 -- @param #number AttackQty (optional) This parameter limits maximal quantity of attack. The aicraft/controllable will not make more attack than allowed even if the target controllable not destroyed and the aicraft/controllable still have ammo. If not defined the aircraft/controllable will attack target until it will be destroyed or until the aircraft/controllable will run out of ammo.
 -- @param Dcs.DCSTypes#Azimuth Direction (optional) Desired ingress direction from the target to the attacking aircraft. Controllable/aircraft will make its attacks from the direction. Of course if there is no way to attack from the direction due the terrain controllable/aircraft will choose another direction.
 -- @param Dcs.DCSTypes#Distance Altitude (optional) Desired attack start altitude. Controllable/aircraft will make its attacks from the altitude. If the altitude is too low or too high to use weapon aircraft/controllable will choose closest altitude to the desired attack start altitude. If the desired altitude is defined controllable/aircraft will not attack from safe altitude.
--- @param #boolean AttackQtyLimit (optional) The flag determines how to interpret attackQty parameter. If the flag is true then attackQty is a limit on maximal attack quantity for "AttackControllable" and "AttackUnit" tasks. If the flag is false then attackQty is a desired attack quantity for "Bombing" and "BombingRunway" tasks.
+-- @param #boolean AttackQtyLimit (optional) The flag determines how to interpret attackQty parameter. If the flag is true then attackQty is a limit on maximal attack quantity for "AttackGroup" and "AttackUnit" tasks. If the flag is false then attackQty is a desired attack quantity for "Bombing" and "BombingRunway" tasks.
 -- @return Dcs.DCSTasking.Task#Task The DCS task structure.
 function CONTROLLABLE:TaskAttackGroup( AttackGroup, WeaponType, WeaponExpend, AttackQty, Direction, Altitude, AttackQtyLimit )
   self:F2( { self.ControllableName, AttackGroup, WeaponType, WeaponExpend, AttackQty, Direction, Altitude, AttackQtyLimit } )
 
-  --  AttackControllable = {
-  --   id = 'AttackControllable',
+  --  AttackGroup = {
+  --   id = 'AttackGroup',
   --   params = {
   --     groupId = Group.ID,
   --     weaponType = number,
@@ -13512,7 +13916,7 @@ function CONTROLLABLE:TaskAttackGroup( AttackGroup, WeaponType, WeaponExpend, At
   end
 
   local DCSTask
-  DCSTask = { id = 'AttackControllable',
+  DCSTask = { id = 'AttackGroup',
     params = {
       groupId = AttackGroup:GetID(),
       weaponType = WeaponType,
@@ -13538,7 +13942,7 @@ end
 -- @param Dcs.DCSTypes#AI.Task.WeaponExpend WeaponExpend (optional) Determines how much weapon will be released at each attack. If parameter is not defined the unit / controllable will choose expend on its own discretion.
 -- @param #number AttackQty (optional) This parameter limits maximal quantity of attack. The aicraft/controllable will not make more attack than allowed even if the target controllable not destroyed and the aicraft/controllable still have ammo. If not defined the aircraft/controllable will attack target until it will be destroyed or until the aircraft/controllable will run out of ammo.
 -- @param Dcs.DCSTypes#Azimuth Direction (optional) Desired ingress direction from the target to the attacking aircraft. Controllable/aircraft will make its attacks from the direction. Of course if there is no way to attack from the direction due the terrain controllable/aircraft will choose another direction.
--- @param #boolean AttackQtyLimit (optional) The flag determines how to interpret attackQty parameter. If the flag is true then attackQty is a limit on maximal attack quantity for "AttackControllable" and "AttackUnit" tasks. If the flag is false then attackQty is a desired attack quantity for "Bombing" and "BombingRunway" tasks.
+-- @param #boolean AttackQtyLimit (optional) The flag determines how to interpret attackQty parameter. If the flag is true then attackQty is a limit on maximal attack quantity for "AttackGroup" and "AttackUnit" tasks. If the flag is false then attackQty is a desired attack quantity for "Bombing" and "BombingRunway" tasks.
 -- @param #boolean ControllableAttack (optional) Flag indicates that the target must be engaged by all aircrafts of the controllable. Has effect only if the task is assigned to a controllable, not to a single aircraft.
 -- @return Dcs.DCSTasking.Task#Task The DCS task structure.
 function CONTROLLABLE:TaskAttackUnit( AttackUnit, WeaponType, WeaponExpend, AttackQty, Direction, AttackQtyLimit, ControllableAttack )
@@ -13585,7 +13989,7 @@ end
 -- @param Dcs.DCSTypes#Vec2 Vec2 2D-coordinates of the point to deliver weapon at.
 -- @param #number WeaponType (optional) Bitmask of weapon types those allowed to use. If parameter is not defined that means no limits on weapon usage.
 -- @param Dcs.DCSTypes#AI.Task.WeaponExpend WeaponExpend (optional) Determines how much weapon will be released at each attack. If parameter is not defined the unit / controllable will choose expend on its own discretion.
--- @param #number AttackQty (optional) Desired quantity of passes. The parameter is not the same in AttackControllable and AttackUnit tasks. 
+-- @param #number AttackQty (optional) Desired quantity of passes. The parameter is not the same in AttackGroup and AttackUnit tasks. 
 -- @param Dcs.DCSTypes#Azimuth Direction (optional) Desired ingress direction from the target to the attacking aircraft. Controllable/aircraft will make its attacks from the direction. Of course if there is no way to attack from the direction due the terrain controllable/aircraft will choose another direction.
 -- @param #boolean ControllableAttack (optional) Flag indicates that the target must be engaged by all aircrafts of the controllable. Has effect only if the task is assigned to a controllable, not to a single aircraft.
 -- @return Dcs.DCSTasking.Task#Task The DCS task structure.
@@ -14030,8 +14434,8 @@ end
 function CONTROLLABLE:TaskFAC_AttackGroup( AttackGroup, WeaponType, Designation, Datalink )
   self:F2( { self.ControllableName, AttackGroup, WeaponType, Designation, Datalink } )
 
---  FAC_AttackControllable = { 
---    id = 'FAC_AttackControllable', 
+--  FAC_AttackGroup = { 
+--    id = 'FAC_AttackGroup', 
 --    params = { 
 --      groupId = Group.ID,
 --      weaponType = number,
@@ -14041,7 +14445,7 @@ function CONTROLLABLE:TaskFAC_AttackGroup( AttackGroup, WeaponType, Designation,
 --  }
 
   local DCSTask
-  DCSTask = { id = 'FAC_AttackControllable',
+  DCSTask = { id = 'FAC_AttackGroup',
     params = {
       groupId = AttackGroup:GetID(),
       weaponType = WeaponType,
@@ -14133,7 +14537,7 @@ end
 -- @param #number AttackQty (optional) This parameter limits maximal quantity of attack. The aicraft/controllable will not make more attack than allowed even if the target controllable not destroyed and the aicraft/controllable still have ammo. If not defined the aircraft/controllable will attack target until it will be destroyed or until the aircraft/controllable will run out of ammo.
 -- @param Dcs.DCSTypes#Azimuth Direction (optional) Desired ingress direction from the target to the attacking aircraft. Controllable/aircraft will make its attacks from the direction. Of course if there is no way to attack from the direction due the terrain controllable/aircraft will choose another direction.
 -- @param Dcs.DCSTypes#Distance Altitude (optional) Desired attack start altitude. Controllable/aircraft will make its attacks from the altitude. If the altitude is too low or too high to use weapon aircraft/controllable will choose closest altitude to the desired attack start altitude. If the desired altitude is defined controllable/aircraft will not attack from safe altitude.
--- @param #boolean AttackQtyLimit (optional) The flag determines how to interpret attackQty parameter. If the flag is true then attackQty is a limit on maximal attack quantity for "AttackControllable" and "AttackUnit" tasks. If the flag is false then attackQty is a desired attack quantity for "Bombing" and "BombingRunway" tasks.
+-- @param #boolean AttackQtyLimit (optional) The flag determines how to interpret attackQty parameter. If the flag is true then attackQty is a limit on maximal attack quantity for "AttackGroup" and "AttackUnit" tasks. If the flag is false then attackQty is a desired attack quantity for "Bombing" and "BombingRunway" tasks.
 -- @return Dcs.DCSTasking.Task#Task The DCS task structure.
 function CONTROLLABLE:EnRouteTaskEngageGroup( AttackGroup, Priority, WeaponType, WeaponExpend, AttackQty, Direction, Altitude, AttackQtyLimit )
   self:F2( { self.ControllableName, AttackGroup, Priority, WeaponType, WeaponExpend, AttackQty, Direction, Altitude, AttackQtyLimit } )
@@ -14466,7 +14870,7 @@ end
 -- @param Dcs.DCSTypes#Vec3 Point The destination point in Vec3 format.
 -- @param #number Speed The speed to travel.
 -- @return #CONTROLLABLE self
-function CONTROLLABLE:TaskRouteToVec2( Point, Speed )
+function CONTROLLABLE:RouteToVec2( Point, Speed )
   self:F2( { Point, Speed } )
 
   local ControllablePoint = self:GetUnit( 1 ):GetVec2()
@@ -14517,7 +14921,7 @@ end
 -- @param Dcs.DCSTypes#Vec3 Point The destination point in Vec3 format.
 -- @param #number Speed The speed to travel.
 -- @return #CONTROLLABLE self
-function CONTROLLABLE:TaskRouteToVec3( Point, Speed )
+function CONTROLLABLE:RouteToVec3( Point, Speed )
   self:F2( { Point, Speed } )
 
   local ControllableVec3 = self:GetUnit( 1 ):GetVec3()
@@ -15380,6 +15784,9 @@ end
 -- 
 -- Hereby the change log:
 -- 
+-- 2017-03-07: GROUP:**HandleEvent( Event, EventFunction )** added.  
+-- 2017-03-07: GROUP:**UnHandleEvent( Event )** added.
+-- 
 -- 2017-01-24: GROUP:**SetAIOnOff( AIOnOff )** added.  
 -- 
 -- 2017-01-24: GROUP:**SetAIOn()** added.  
@@ -16201,7 +16608,32 @@ function GROUP:OnReSpawn( ReSpawnFunction )
   self.ReSpawnFunction = ReSpawnFunction
 end
 
+do -- Event Handling
 
+  --- Subscribe to a DCS Event.
+  -- @param #GROUP self
+  -- @param Core.Event#EVENTS Event
+  -- @param #function EventFunction (optional) The function to be called when the event occurs for the GROUP.
+  -- @return #GROUP
+  function GROUP:HandleEvent( Event, EventFunction )
+  
+    self:EventDispatcher():OnEventForGroup( self:GetName(), EventFunction, self, Event )
+    
+    return self
+  end
+  
+  --- UnSubscribe to a DCS event.
+  -- @param #GROUP self
+  -- @param Core.Event#EVENTS Event
+  -- @return #GROUP
+  function GROUP:UnHandleEvent( Event )
+  
+    self:EventDispatcher():RemoveForGroup( self:GetName(), self, Event )
+    
+    return self
+  end
+
+end
 --- This module contains the UNIT class.
 -- 
 -- 1) @{#UNIT} class, extends @{Controllable#CONTROLLABLE}
@@ -17674,8 +18106,9 @@ STATIC = {
 -- As an optional parameter, a briefing text can be given also.
 -- @param #STATIC self
 -- @param #string StaticName Name of the DCS **Static** as defined within the Mission Editor.
+-- @param #boolean RaiseError Raise an error if not found.
 -- @return #STATIC
-function STATIC:FindByName( StaticName )
+function STATIC:FindByName( StaticName, RaiseError )
   local StaticFound = _DATABASE:FindStatic( StaticName )
 
   self.StaticName = StaticName
@@ -17685,8 +18118,12 @@ function STATIC:FindByName( StaticName )
 
   	return StaticFound
   end
-  
-  error( "STATIC not found for: " .. StaticName )
+
+  if RaiseError == nil or RaiseError == true then
+    error( "STATIC not found for: " .. StaticName )
+  end
+
+  return nil
 end
 
 function STATIC:Register( StaticName )
@@ -17902,7 +18339,7 @@ end
 -- 
 -- ![Banner Image](..\Presentations\SCORING\Dia9.JPG)
 -- 
--- **Various @{Zone}s** can be defined for which scores are also granted when objects in that @{Zone} are destroyed.
+-- Various @{Zone}s can be defined for which scores are also granted when objects in that @{Zone} are destroyed.
 -- This is **specifically useful** to designate **scenery targets on the map** that will generate points when destroyed.
 -- 
 -- With a small change in MissionScripting.lua, the scoring results can also be logged in a **CSV file**.  
@@ -17958,13 +18395,18 @@ end
 -- The other implementation could be to designate a scenery target (a building) in the mission editor surrounded by a @{Zone}, 
 -- just large enough around that building.
 -- 
--- ## 1.4) Configure fratricide level.
+-- ## 1.4) Add extra Goal scores upon an event or a condition.
+-- 
+-- A mission has goals and achievements. The scoring system provides an API to set additional scores when a goal or achievement event happens.
+-- Use the method @{#SCORING.AddGoalScore}() to add a score for a Player at any time in your mission.
+-- 
+-- ## 1.5) Configure fratricide level.
 -- 
 -- When a player commits too much damage to friendlies, his penalty score will reach a certain level.
 -- Use the method @{#SCORING.SetFratricide}() to define the level when a player gets kicked.  
 -- By default, the fratricide level is the default penalty mutiplier * 2 for the penalty score.
 -- 
--- ## 1.5) Penalty score when a player changes the coalition.
+-- ## 1.6) Penalty score when a player changes the coalition.
 -- 
 -- When a player changes the coalition, he can receive a penalty score.
 -- Use the method @{#SCORING.SetCoalitionChangePenalty}() to define the penalty when a player changes coalition.
@@ -18373,6 +18815,7 @@ function SCORING:SetFratricide( Fratricide )
   return self
 end
 
+
 --- When a player changes the coalition, he can receive a penalty score.
 -- Use the method @{#SCORING.SetCoalitionChangePenalty}() to define the penalty when a player changes coalition.
 -- By default, the penalty for changing coalition is the default penalty scale.  
@@ -18406,6 +18849,7 @@ function SCORING:_AddPlayerFromUnit( UnitData )
       self.Players[PlayerName] = {}
       self.Players[PlayerName].Hit = {}
       self.Players[PlayerName].Destroy = {}
+      self.Players[PlayerName].Goals = {}
       self.Players[PlayerName].Mission = {}
 
       -- for CategoryID, CategoryName in pairs( SCORINGCategory ) do
@@ -18429,7 +18873,7 @@ function SCORING:_AddPlayerFromUnit( UnitData )
           "(changed " .. self.Players[PlayerName].PenaltyCoalition .. " times the coalition). 50 Penalty points added.",
           2
         ):ToAll()
-        self:ScoreCSV( PlayerName, "COALITION_PENALTY",  1, -50, self.Players[PlayerName].UnitName, _SCORINGCoalition[self.Players[PlayerName].UnitCoalition], _SCORINGCategory[self.Players[PlayerName].UnitCategory], self.Players[PlayerName].UnitType,
+        self:ScoreCSV( PlayerName, "", "COALITION_PENALTY",  1, -50, self.Players[PlayerName].UnitName, _SCORINGCoalition[self.Players[PlayerName].UnitCoalition], _SCORINGCategory[self.Players[PlayerName].UnitCategory], self.Players[PlayerName].UnitType,
           UnitName, _SCORINGCoalition[UnitCoalition], _SCORINGCategory[UnitCategory], UnitData:GetTypeName() )
       end
     end
@@ -18455,6 +18899,37 @@ function SCORING:_AddPlayerFromUnit( UnitData )
       ):ToAll()
     end
 
+  end
+end
+
+
+--- Add a goal score for a player.
+-- The method takes the PlayerUnit for which the Goal score needs to be set.
+-- The GoalTag is a string or identifier that is taken into the CSV file scoring log to identify the goal.
+-- A free text can be given that is shown to the players.
+-- The Score can be both positive and negative.
+-- @param #SCORING self
+-- @param Wrapper.Unit#UNIT PlayerUnit The @{Unit} of the Player. Other Properties for the scoring are taken from this PlayerUnit, like coalition, type etc. 
+-- @param #string GoalTag The string or identifier that is used in the CSV file to identify the goal (sort or group later in Excel).
+-- @param #string Text A free text that is shown to the players.
+-- @param #number Score The score can be both positive or negative ( Penalty ).
+function SCORING:AddGoalScore( PlayerUnit, GoalTag, Text, Score )
+
+  local PlayerName = PlayerUnit:GetPlayerName()
+
+  self:E( { PlayerUnit.UnitName, PlayerName, GoalTag, Text, Score } )
+
+  -- PlayerName can be nil, if the Unit with the player crashed or due to another reason.
+  if PlayerName then 
+    local PlayerData = self.Players[PlayerName]
+
+    PlayerData.Goals[GoalTag] = PlayerData.Goals[GoalTag] or { Score = 0 }
+    PlayerData.Goals[GoalTag].Score = PlayerData.Goals[GoalTag].Score + Score  
+    PlayerData.Score = PlayerData.Score + Score
+  
+    MESSAGE:New( Text, 30 ):ToAll()
+  
+    self:ScoreCSV( PlayerName, "", "GOAL_" .. string.upper( GoalTag ), 1, Score, PlayerUnit:GetName() )
   end
 end
 
@@ -18492,7 +18967,7 @@ function SCORING:_AddMissionTaskScore( Mission, PlayerUnit, Text, Score )
       Score .. " task score!",
       30 ):ToAll()
   
-    self:ScoreCSV( PlayerName, "TASK_" .. MissionName:gsub( ' ', '_' ), 1, Score, PlayerUnit:GetName() )
+    self:ScoreCSV( PlayerName, "", "TASK_" .. MissionName:gsub( ' ', '_' ), 1, Score, PlayerUnit:GetName() )
   end
 end
 
@@ -18522,7 +18997,7 @@ function SCORING:_AddMissionScore( Mission, Text, Score )
         Score .. " mission score!",
         60 ):ToAll()
 
-      self:ScoreCSV( PlayerName, "MISSION_" .. MissionName:gsub( ' ', '_' ), 1, Score )
+      self:ScoreCSV( PlayerName, "", "MISSION_" .. MissionName:gsub( ' ', '_' ), 1, Score )
     end
   end
 end
@@ -18703,7 +19178,7 @@ function SCORING:_EventOnHit( Event )
                   :ToAllIf( self:IfMessagesHit() and self:IfMessagesToAll() )
                   :ToCoalitionIf( InitCoalition, self:IfMessagesHit() and self:IfMessagesToCoalition() )
               end
-              self:ScoreCSV( InitPlayerName, "HIT_PENALTY", 1, -25, InitUnitName, InitUnitCoalition, InitUnitCategory, InitUnitType, TargetUnitName, TargetUnitCoalition, TargetUnitCategory, TargetUnitType )
+              self:ScoreCSV( InitPlayerName, TargetPlayerName, "HIT_PENALTY", 1, -25, InitUnitName, InitUnitCoalition, InitUnitCategory, InitUnitType, TargetUnitName, TargetUnitCoalition, TargetUnitCategory, TargetUnitType )
             else
               Player.Score = Player.Score + 1
               PlayerHit.Score = PlayerHit.Score + 1
@@ -18727,7 +19202,7 @@ function SCORING:_EventOnHit( Event )
                   :ToAllIf( self:IfMessagesHit() and self:IfMessagesToAll() )
                   :ToCoalitionIf( InitCoalition, self:IfMessagesHit() and self:IfMessagesToCoalition() )
               end
-              self:ScoreCSV( InitPlayerName, "HIT_SCORE", 1, 1, InitUnitName, InitUnitCoalition, InitUnitCategory, InitUnitType, TargetUnitName, TargetUnitCoalition, TargetUnitCategory, TargetUnitType )
+              self:ScoreCSV( InitPlayerName, TargetPlayerName, "HIT_SCORE", 1, 1, InitUnitName, InitUnitCoalition, InitUnitCategory, InitUnitType, TargetUnitName, TargetUnitCoalition, TargetUnitCategory, TargetUnitType )
             end
           else -- A scenery object was hit.
             MESSAGE
@@ -18736,7 +19211,7 @@ function SCORING:_EventOnHit( Event )
                   )
               :ToAllIf( self:IfMessagesHit() and self:IfMessagesToAll() )
               :ToCoalitionIf( InitCoalition, self:IfMessagesHit() and self:IfMessagesToCoalition() )
-            self:ScoreCSV( InitPlayerName, "HIT_SCORE", 1, 1, InitUnitName, InitUnitCoalition, InitUnitCategory, InitUnitType, TargetUnitName, "", "Scenery", TargetUnitType )
+            self:ScoreCSV( InitPlayerName, "", "HIT_SCORE", 1, 1, InitUnitName, InitUnitCoalition, InitUnitCategory, InitUnitType, TargetUnitName, "", "Scenery", TargetUnitType )
           end
         end
       end
@@ -18766,7 +19241,7 @@ function SCORING:_EventOnDeadOrCrash( Event )
 
   if Event.IniDCSUnit then
 
-    TargetUnit = Event.IniDCSUnit
+    TargetUnit = Event.IniUnit
     TargetUnitName = Event.IniDCSUnitName
     TargetGroup = Event.IniDCSGroup
     TargetGroupName = Event.IniDCSGroupName
@@ -18812,11 +19287,10 @@ function SCORING:_EventOnDeadOrCrash( Event )
         TargetDestroy.ScoreDestroy = TargetDestroy.ScoreDestroy or 0
         TargetDestroy.Penalty =  TargetDestroy.Penalty or 0
         TargetDestroy.PenaltyDestroy = TargetDestroy.PenaltyDestroy or 0
-        TargetDestroy.UNIT = TargetDestroy.UNIT or Player.Hit[TargetCategory][TargetUnitName].UNIT
 
         if TargetCoalition then
           if InitCoalition == TargetCoalition then
-            local ThreatLevelTarget, ThreatTypeTarget = TargetDestroy.UNIT:GetThreatLevel()
+            local ThreatLevelTarget, ThreatTypeTarget = TargetUnit:GetThreatLevel()
             local ThreatLevelPlayer = Player.UNIT:GetThreatLevel() / 10 + 1
             local ThreatPenalty = math.ceil( ( ThreatLevelTarget / ThreatLevelPlayer ) * self.ScaleDestroyPenalty / 10 )
             self:E( { ThreatLevel = ThreatPenalty, ThreatLevelTarget = ThreatLevelTarget, ThreatTypeTarget = ThreatTypeTarget, ThreatLevelPlayer = ThreatLevelPlayer  } )
@@ -18844,10 +19318,10 @@ function SCORING:_EventOnDeadOrCrash( Event )
                 :ToAllIf( self:IfMessagesDestroy() and self:IfMessagesToAll() )
                 :ToCoalitionIf( InitCoalition, self:IfMessagesDestroy() and self:IfMessagesToCoalition() )
             end
-            self:ScoreCSV( PlayerName, "DESTROY_PENALTY", 1, ThreatPenalty, InitUnitName, InitUnitCoalition, InitUnitCategory, InitUnitType, TargetUnitName, TargetUnitCoalition, TargetUnitCategory, TargetUnitType )
+            self:ScoreCSV( PlayerName, TargetPlayerName, "DESTROY_PENALTY", 1, ThreatPenalty, InitUnitName, InitUnitCoalition, InitUnitCategory, InitUnitType, TargetUnitName, TargetUnitCoalition, TargetUnitCategory, TargetUnitType )
           else
   
-            local ThreatLevelTarget, ThreatTypeTarget = TargetDestroy.UNIT:GetThreatLevel()
+            local ThreatLevelTarget, ThreatTypeTarget = TargetUnit:GetThreatLevel()
             local ThreatLevelPlayer = Player.UNIT:GetThreatLevel() / 10 + 1
             local ThreatScore = math.ceil( ( ThreatLevelTarget / ThreatLevelPlayer )  * self.ScaleDestroyScore / 10 )
             
@@ -18875,9 +19349,9 @@ function SCORING:_EventOnDeadOrCrash( Event )
                 :ToAllIf( self:IfMessagesDestroy() and self:IfMessagesToAll() )
                 :ToCoalitionIf( InitCoalition, self:IfMessagesDestroy() and self:IfMessagesToCoalition() )
             end
-            self:ScoreCSV( PlayerName, "DESTROY_SCORE", 1, ThreatScore, InitUnitName, InitUnitCoalition, InitUnitCategory, InitUnitType, TargetUnitName, TargetUnitCoalition, TargetUnitCategory, TargetUnitType )
+            self:ScoreCSV( PlayerName, TargetPlayerName, "DESTROY_SCORE", 1, ThreatScore, InitUnitName, InitUnitCoalition, InitUnitCategory, InitUnitType, TargetUnitName, TargetUnitCoalition, TargetUnitCategory, TargetUnitType )
             
-            local UnitName = TargetDestroy.UNIT:GetName()
+            local UnitName = TargetUnit:GetName()
             local Score = self.ScoringObjects[UnitName]
             if Score then
               Player.Score = Player.Score + Score
@@ -18889,7 +19363,7 @@ function SCORING:_EventOnDeadOrCrash( Event )
                     )
                 :ToAllIf( self:IfMessagesScore() and self:IfMessagesToAll() )
                 :ToCoalitionIf( InitCoalition, self:IfMessagesScore() and self:IfMessagesToCoalition() )
-              self:ScoreCSV( PlayerName, "DESTROY_SCORE", 1, Score, InitUnitName, InitUnitCoalition, InitUnitCategory, InitUnitType, TargetUnitName, TargetUnitCoalition, TargetUnitCategory, TargetUnitType )
+              self:ScoreCSV( PlayerName, TargetPlayerName, "DESTROY_SCORE", 1, Score, InitUnitName, InitUnitCoalition, InitUnitCategory, InitUnitType, TargetUnitName, TargetUnitCoalition, TargetUnitCategory, TargetUnitType )
             end
             
             -- Check if there are Zones where the destruction happened.
@@ -18897,7 +19371,7 @@ function SCORING:_EventOnDeadOrCrash( Event )
               self:E( { ScoringZone = ScoreZoneData } )
               local ScoreZone = ScoreZoneData.ScoreZone -- Core.Zone#ZONE_BASE
               local Score = ScoreZoneData.Score
-              if ScoreZone:IsVec2InZone( TargetDestroy.UNIT:GetVec2() ) then
+              if ScoreZone:IsVec2InZone( TargetUnit:GetVec2() ) then
                 Player.Score = Player.Score + Score
                 TargetDestroy.Score = TargetDestroy.Score + Score
                 MESSAGE
@@ -18907,7 +19381,7 @@ function SCORING:_EventOnDeadOrCrash( Event )
                         15 )
                   :ToAllIf( self:IfMessagesZone() and self:IfMessagesToAll() )
                   :ToCoalitionIf( InitCoalition, self:IfMessagesZone() and self:IfMessagesToCoalition() )
-                self:ScoreCSV( PlayerName, "DESTROY_SCORE", 1, Score, InitUnitName, InitUnitCoalition, InitUnitCategory, InitUnitType, TargetUnitName, TargetUnitCoalition, TargetUnitCategory, TargetUnitType )
+                self:ScoreCSV( PlayerName, TargetPlayerName, "DESTROY_SCORE", 1, Score, InitUnitName, InitUnitCoalition, InitUnitCategory, InitUnitType, TargetUnitName, TargetUnitCoalition, TargetUnitCategory, TargetUnitType )
               end
             end
                           
@@ -18918,7 +19392,7 @@ function SCORING:_EventOnDeadOrCrash( Event )
               self:E( { ScoringZone = ScoreZoneData } )
             local ScoreZone = ScoreZoneData.ScoreZone -- Core.Zone#ZONE_BASE
             local Score = ScoreZoneData.Score
-            if ScoreZone:IsVec2InZone( TargetDestroy.UNIT:GetVec2() ) then
+            if ScoreZone:IsVec2InZone( TargetUnit:GetVec2() ) then
               Player.Score = Player.Score + Score
               TargetDestroy.Score = TargetDestroy.Score + Score
               MESSAGE
@@ -18929,7 +19403,7 @@ function SCORING:_EventOnDeadOrCrash( Event )
                     )
                 :ToAllIf( self:IfMessagesZone() and self:IfMessagesToAll() )
                 :ToCoalitionIf( InitCoalition, self:IfMessagesZone() and self:IfMessagesToCoalition() )
-              self:ScoreCSV( PlayerName, "DESTROY_SCORE", 1, Score, InitUnitName, InitUnitCoalition, InitUnitCategory, InitUnitType, TargetUnitName, "", "Scenery", TargetUnitType )
+              self:ScoreCSV( PlayerName, "", "DESTROY_SCORE", 1, Score, InitUnitName, InitUnitCoalition, InitUnitCategory, InitUnitType, TargetUnitName, "", "Scenery", TargetUnitType )
             end
           end
         end
@@ -19082,6 +19556,43 @@ function SCORING:ReportDetailedPlayerCoalitionChanges( PlayerName )
   return ScoreMessage, PlayerScore, PlayerPenalty
 end
 
+--- Produce detailed report of player goal scores.
+-- @param #SCORING self
+-- @param #string PlayerName The name of the player.
+-- @return #string The report.
+function SCORING:ReportDetailedPlayerGoals( PlayerName )
+
+  local ScoreMessage = ""
+  local PlayerScore = 0
+  local PlayerPenalty = 0
+
+  local PlayerData = self.Players[PlayerName]
+  if PlayerData then -- This should normally not happen, but i'll test it anyway.
+    self:T( "Score Player: " .. PlayerName )
+
+    -- Some variables
+    local InitUnitCoalition = _SCORINGCoalition[PlayerData.UnitCoalition]
+    local InitUnitCategory = _SCORINGCategory[PlayerData.UnitCategory]
+    local InitUnitType = PlayerData.UnitType
+    local InitUnitName = PlayerData.UnitName
+
+    local ScoreMessageGoal = ""
+    local ScoreGoal = 0
+    local ScoreTask = 0
+    for GoalName, GoalData in pairs( PlayerData.Goals ) do
+      ScoreGoal = ScoreGoal + GoalData.Score
+      ScoreMessageGoal = ScoreMessageGoal .. "'" .. GoalName .. "':" .. GoalData.Score .. "; "
+    end
+    PlayerScore = PlayerScore + ScoreGoal
+
+    if ScoreMessageGoal ~= "" then
+      ScoreMessage = "Goals: " .. ScoreMessageGoal
+    end
+  end
+  
+  return ScoreMessage, PlayerScore, PlayerPenalty
+end
+
 --- Produce detailed report of player penalty scores because of changing the coalition.
 -- @param #SCORING self
 -- @param #string PlayerName The name of the player.
@@ -19102,9 +19613,6 @@ function SCORING:ReportDetailedPlayerMissions( PlayerName )
     local InitUnitType = PlayerData.UnitType
     local InitUnitName = PlayerData.UnitName
 
-    local PlayerScore = 0
-    local PlayerPenalty = 0
-
     local ScoreMessageMission = ""
     local ScoreMission = 0
     local ScoreTask = 0
@@ -19116,7 +19624,7 @@ function SCORING:ReportDetailedPlayerMissions( PlayerName )
     PlayerScore = PlayerScore + ScoreMission + ScoreTask
 
     if ScoreMessageMission ~= "" then
-      ScoreMessage = ScoreMessage .. "Tasks: " .. ScoreTask .. " Mission: " .. ScoreMission .. " ( " .. ScoreMessageMission .. ")"
+      ScoreMessage = "Tasks: " .. ScoreTask .. " Mission: " .. ScoreMission .. " ( " .. ScoreMessageMission .. ")"
     end
   end
   
@@ -19143,18 +19651,25 @@ function SCORING:ReportScoreGroupSummary( PlayerGroup )
       local ReportHits, ScoreHits, PenaltyHits = self:ReportDetailedPlayerHits( PlayerName )
       ReportHits = ReportHits ~= "" and "\n- " .. ReportHits or ReportHits 
       self:E( { ReportHits, ScoreHits, PenaltyHits } )
+
       local ReportDestroys, ScoreDestroys, PenaltyDestroys = self:ReportDetailedPlayerDestroys( PlayerName )
       ReportDestroys = ReportDestroys ~= "" and "\n- " .. ReportDestroys or ReportDestroys
       self:E( { ReportDestroys, ScoreDestroys, PenaltyDestroys } )
+
       local ReportCoalitionChanges, ScoreCoalitionChanges, PenaltyCoalitionChanges = self:ReportDetailedPlayerCoalitionChanges( PlayerName )
       ReportCoalitionChanges = ReportCoalitionChanges ~= "" and "\n- " .. ReportCoalitionChanges or ReportCoalitionChanges
       self:E( { ReportCoalitionChanges, ScoreCoalitionChanges, PenaltyCoalitionChanges } )
+
+      local ReportGoals, ScoreGoals, PenaltyGoals = self:ReportDetailedPlayerGoals( PlayerName )
+      ReportGoals = ReportGoals ~= "" and "\n- " .. ReportGoals or ReportGoals
+      self:E( { ReportGoals, ScoreGoals, PenaltyGoals } )
+
       local ReportMissions, ScoreMissions, PenaltyMissions = self:ReportDetailedPlayerMissions( PlayerName )
       ReportMissions = ReportMissions ~= "" and "\n- " .. ReportMissions or ReportMissions
       self:E( { ReportMissions, ScoreMissions, PenaltyMissions } )
       
-      local PlayerScore = ScoreHits + ScoreDestroys + ScoreCoalitionChanges + ScoreMissions
-      local PlayerPenalty = PenaltyHits + PenaltyDestroys + PenaltyCoalitionChanges + PenaltyMissions
+      local PlayerScore = ScoreHits + ScoreDestroys + ScoreCoalitionChanges + ScoreGoals + ScoreMissions
+      local PlayerPenalty = PenaltyHits + PenaltyDestroys + PenaltyCoalitionChanges + ScoreGoals + PenaltyMissions
   
       PlayerMessage = 
         string.format( "Player '%s' Score = %d ( %d Score, -%d Penalties )", 
@@ -19188,21 +19703,28 @@ function SCORING:ReportScoreGroupDetailed( PlayerGroup )
       local ReportHits, ScoreHits, PenaltyHits = self:ReportDetailedPlayerHits( PlayerName )
       ReportHits = ReportHits ~= "" and "\n- " .. ReportHits or ReportHits 
       self:E( { ReportHits, ScoreHits, PenaltyHits } )
+
       local ReportDestroys, ScoreDestroys, PenaltyDestroys = self:ReportDetailedPlayerDestroys( PlayerName )
       ReportDestroys = ReportDestroys ~= "" and "\n- " .. ReportDestroys or ReportDestroys
       self:E( { ReportDestroys, ScoreDestroys, PenaltyDestroys } )
+
       local ReportCoalitionChanges, ScoreCoalitionChanges, PenaltyCoalitionChanges = self:ReportDetailedPlayerCoalitionChanges( PlayerName )
       ReportCoalitionChanges = ReportCoalitionChanges ~= "" and "\n- " .. ReportCoalitionChanges or ReportCoalitionChanges
       self:E( { ReportCoalitionChanges, ScoreCoalitionChanges, PenaltyCoalitionChanges } )
+      
+      local ReportGoals, ScoreGoals, PenaltyGoals = self:ReportDetailedPlayerGoals( PlayerName )
+      ReportGoals = ReportGoals ~= "" and "\n- " .. ReportGoals or ReportGoals
+      self:E( { ReportGoals, ScoreGoals, PenaltyGoals } )
+
       local ReportMissions, ScoreMissions, PenaltyMissions = self:ReportDetailedPlayerMissions( PlayerName )
       ReportMissions = ReportMissions ~= "" and "\n- " .. ReportMissions or ReportMissions
       self:E( { ReportMissions, ScoreMissions, PenaltyMissions } )
       
-      local PlayerScore = ScoreHits + ScoreDestroys + ScoreCoalitionChanges + ScoreMissions
-      local PlayerPenalty = PenaltyHits + PenaltyDestroys + PenaltyCoalitionChanges + PenaltyMissions
+      local PlayerScore = ScoreHits + ScoreDestroys + ScoreCoalitionChanges + ScoreGoals + ScoreMissions
+      local PlayerPenalty = PenaltyHits + PenaltyDestroys + PenaltyCoalitionChanges + ScoreGoals + PenaltyMissions
   
       PlayerMessage = 
-        string.format( "Player '%s' Score = %d ( %d Score, -%d Penalties )%s%s%s%s", 
+        string.format( "Player '%s' Score = %d ( %d Score, -%d Penalties )%s%s%s%s%s", 
                        PlayerName, 
                        PlayerScore - PlayerPenalty, 
                        PlayerScore, 
@@ -19210,6 +19732,7 @@ function SCORING:ReportScoreGroupDetailed( PlayerGroup )
                        ReportHits,
                        ReportDestroys,
                        ReportCoalitionChanges,
+                       ReportGoals,
                        ReportMissions
                      )
       MESSAGE:New( PlayerMessage, 30, "Player '" .. PlayerName .. "'" ):ToGroup( PlayerGroup )
@@ -19234,18 +19757,25 @@ function SCORING:ReportScoreAllSummary( PlayerGroup )
       local ReportHits, ScoreHits, PenaltyHits = self:ReportDetailedPlayerHits( PlayerName )
       ReportHits = ReportHits ~= "" and "\n- " .. ReportHits or ReportHits 
       self:E( { ReportHits, ScoreHits, PenaltyHits } )
+
       local ReportDestroys, ScoreDestroys, PenaltyDestroys = self:ReportDetailedPlayerDestroys( PlayerName )
       ReportDestroys = ReportDestroys ~= "" and "\n- " .. ReportDestroys or ReportDestroys
       self:E( { ReportDestroys, ScoreDestroys, PenaltyDestroys } )
+
       local ReportCoalitionChanges, ScoreCoalitionChanges, PenaltyCoalitionChanges = self:ReportDetailedPlayerCoalitionChanges( PlayerName )
       ReportCoalitionChanges = ReportCoalitionChanges ~= "" and "\n- " .. ReportCoalitionChanges or ReportCoalitionChanges
       self:E( { ReportCoalitionChanges, ScoreCoalitionChanges, PenaltyCoalitionChanges } )
+
+      local ReportGoals, ScoreGoals, PenaltyGoals = self:ReportDetailedPlayerGoals( PlayerName )
+      ReportGoals = ReportGoals ~= "" and "\n- " .. ReportGoals or ReportGoals
+      self:E( { ReportGoals, ScoreGoals, PenaltyGoals } )
+
       local ReportMissions, ScoreMissions, PenaltyMissions = self:ReportDetailedPlayerMissions( PlayerName )
       ReportMissions = ReportMissions ~= "" and "\n- " .. ReportMissions or ReportMissions
       self:E( { ReportMissions, ScoreMissions, PenaltyMissions } )
       
-      local PlayerScore = ScoreHits + ScoreDestroys + ScoreCoalitionChanges + ScoreMissions
-      local PlayerPenalty = PenaltyHits + PenaltyDestroys + PenaltyCoalitionChanges + PenaltyMissions
+      local PlayerScore = ScoreHits + ScoreDestroys + ScoreCoalitionChanges + ScoreGoals + ScoreMissions
+      local PlayerPenalty = PenaltyHits + PenaltyDestroys + PenaltyCoalitionChanges + ScoreGoals + PenaltyMissions
   
       PlayerMessage = 
         string.format( "Player '%s' Score = %d ( %d Score, -%d Penalties )", 
@@ -19295,7 +19825,7 @@ function SCORING:OpenCSV( ScoringCSV )
         error( "Error: Cannot open CSV file in " .. lfs.writedir() )
       end
 
-      self.CSVFile:write( '"GameName","RunTime","Time","PlayerName","ScoreType","PlayerUnitCoaltion","PlayerUnitCategory","PlayerUnitType","PlayerUnitName","TargetUnitCoalition","TargetUnitCategory","TargetUnitType","TargetUnitName","Times","Score"\n' )
+      self.CSVFile:write( '"GameName","RunTime","Time","PlayerName","TargetPlayerName","ScoreType","PlayerUnitCoaltion","PlayerUnitCategory","PlayerUnitType","PlayerUnitName","TargetUnitCoalition","TargetUnitCategory","TargetUnitType","TargetUnitName","Times","Score"\n' )
   
       self.RunTime = os.date("%y-%m-%d_%H-%M-%S")
     else
@@ -19311,6 +19841,7 @@ end
 --- Registers a score for a player.
 -- @param #SCORING self
 -- @param #string PlayerName The name of the player.
+-- @param #string TargetPlayerName The name of the target player.
 -- @param #string ScoreType The type of the score.
 -- @param #string ScoreTimes The amount of scores achieved.
 -- @param #string ScoreAmount The score given.
@@ -19323,10 +19854,13 @@ end
 -- @param #string TargetUnitCategory The category of the target unit.
 -- @param #string TargetUnitType The type of the target unit.
 -- @return #SCORING self
-function SCORING:ScoreCSV( PlayerName, ScoreType, ScoreTimes, ScoreAmount, PlayerUnitName, PlayerUnitCoalition, PlayerUnitCategory, PlayerUnitType, TargetUnitName, TargetUnitCoalition, TargetUnitCategory, TargetUnitType )
+function SCORING:ScoreCSV( PlayerName, TargetPlayerName, ScoreType, ScoreTimes, ScoreAmount, PlayerUnitName, PlayerUnitCoalition, PlayerUnitCategory, PlayerUnitType, TargetUnitName, TargetUnitCoalition, TargetUnitCategory, TargetUnitType )
   --write statistic information to file
   local ScoreTime = self:SecondsToClock( timer.getTime() )
   PlayerName = PlayerName:gsub( '"', '_' )
+  
+  TargetPlayerName = TargetPlayerName or ""
+  TargetPlayerName = TargetPlayerName:gsub( '"', '_' )
 
   if PlayerUnitName and PlayerUnitName ~= '' then
     local PlayerUnit = Unit.getByName( PlayerUnitName )
@@ -19368,6 +19902,7 @@ function SCORING:ScoreCSV( PlayerName, ScoreType, ScoreTimes, ScoreAmount, Playe
       '"' .. self.RunTime         .. '"' .. ',' ..
       ''  .. ScoreTime            .. ''  .. ',' ..
       '"' .. PlayerName           .. '"' .. ',' ..
+      '"' .. TargetPlayerName     .. '"' .. ',' ..
       '"' .. ScoreType            .. '"' .. ',' ..
       '"' .. PlayerUnitCoalition  .. '"' .. ',' ..
       '"' .. PlayerUnitCategory   .. '"' .. ',' ..
@@ -22674,7 +23209,7 @@ function ESCORT:_FollowScheduler()
       self:T( { "Client Speed, Escort Speed, Speed, FollowDistance, Time:", CS, GS, Speed, FollowDistance, Time } )
 
       -- Now route the escort to the desired point with the desired speed.
-      self.EscortGroup:TaskRouteToVec3( GDV, Speed / 3.6 ) -- DCS models speed in Mps (Miles per second)
+      self.EscortGroup:RouteToVec3( GDV, Speed / 3.6 ) -- DCS models speed in Mps (Miles per second)
     end
 
     return true
@@ -26109,11 +26644,14 @@ end
 -- 
 --   * **None** ( Group ): The process is not started yet.
 --   * **Patrolling** ( Group ): The AI is patrolling the Patrol Zone.
---   * **Returning** ( Group ): The AI is returning to Base..
+--   * **Returning** ( Group ): The AI is returning to Base.
+--   * **Stopped** ( Group ): The process is stopped.
+--   * **Crashed** ( Group ): The AI has crashed or is dead.
 -- 
 -- ### 1.2.2) AI_PATROL_ZONE Events
 -- 
 --   * **Start** ( Group ): Start the process.
+--   * **Stop** ( Group ): Stop the process.
 --   * **Route** ( Group ): Route the AI to a new random 3D point within the Patrol Zone.
 --   * **RTB** ( Group ): Route the AI to the home base.
 --   * **Detect** ( Group ): The AI is detecting targets.
@@ -26259,6 +26797,51 @@ function AI_PATROL_ZONE:New( PatrolZone, PatrolFloorAltitude, PatrolCeilingAltit
   self.DetectedUnits = {} -- This table contains the targets detected during patrol.
   
   self:SetStartState( "None" ) 
+
+  self:AddTransition( "*", "Stop", "Stopped" )
+
+--- OnLeave Transition Handler for State Stopped.
+-- @function [parent=#AI_PATROL_ZONE] OnLeaveStopped
+-- @param #AI_PATROL_ZONE self
+-- @param Wrapper.Controllable#CONTROLLABLE Controllable The Controllable Object managed by the FSM.
+-- @param #string From The From State string.
+-- @param #string Event The Event string.
+-- @param #string To The To State string.
+-- @return #boolean Return false to cancel Transition.
+
+--- OnEnter Transition Handler for State Stopped.
+-- @function [parent=#AI_PATROL_ZONE] OnEnterStopped
+-- @param #AI_PATROL_ZONE self
+-- @param Wrapper.Controllable#CONTROLLABLE Controllable The Controllable Object managed by the FSM.
+-- @param #string From The From State string.
+-- @param #string Event The Event string.
+-- @param #string To The To State string.
+
+--- OnBefore Transition Handler for Event Stop.
+-- @function [parent=#AI_PATROL_ZONE] OnBeforeStop
+-- @param #AI_PATROL_ZONE self
+-- @param Wrapper.Controllable#CONTROLLABLE Controllable The Controllable Object managed by the FSM.
+-- @param #string From The From State string.
+-- @param #string Event The Event string.
+-- @param #string To The To State string.
+-- @return #boolean Return false to cancel Transition.
+
+--- OnAfter Transition Handler for Event Stop.
+-- @function [parent=#AI_PATROL_ZONE] OnAfterStop
+-- @param #AI_PATROL_ZONE self
+-- @param Wrapper.Controllable#CONTROLLABLE Controllable The Controllable Object managed by the FSM.
+-- @param #string From The From State string.
+-- @param #string Event The Event string.
+-- @param #string To The To State string.
+	
+--- Synchronous Event Trigger for Event Stop.
+-- @function [parent=#AI_PATROL_ZONE] Stop
+-- @param #AI_PATROL_ZONE self
+
+--- Asynchronous Event Trigger for Event Stop.
+-- @function [parent=#AI_PATROL_ZONE] __Stop
+-- @param #AI_PATROL_ZONE self
+-- @param #number Delay The delay in seconds.
 
   self:AddTransition( "None", "Start", "Patrolling" )
 
@@ -27442,7 +28025,7 @@ function AI_CAS_ZONE:onafterEngage( Controllable, From, Event, To, EngageSpeed, 
       true 
     )
     
-    ToTargetPointVec3:SmokeBlue()
+    --ToTargetPointVec3:SmokeBlue()
 
     EngageRoute[#EngageRoute+1] = ToTargetRoutePoint
     
@@ -33033,6 +33616,7 @@ do -- TASK_A2G
 
 
 --- The main include file for the MOOSE system.
+-- Test of permissions
 
 --- Core Routines
 Include.File( "Utilities/Routines" )

@@ -64,14 +64,15 @@ do -- AI_DESIGNATE
       
         local DesignateMenu = GroupReport:GetState( GroupReport, "DesignateMenu" ) -- Core.Menu#MENU_GROUP
         DesignateMenu:RemoveSubMenus()
+        
       
         local DetectedItems = self.Detection:GetDetectedItems()
         
         for Index, DetectedItemData in pairs( DetectedItems ) do
           
-          local DetectedSet = DetectedItemData:GetSet() -- Core.Set#SET_UNIT
+          local DetectedReport = self.Detection:DetectedItemReportSummary( Index )
           
-          local DetectedReport = DetectedItemData:DetectedItemReportSummary( Index )
+          GroupReport:MessageToAll( DetectedReport,15,"Detected")
           
           MENU_GROUP_COMMAND:New(
             GroupReport, 
@@ -91,7 +92,37 @@ do -- AI_DESIGNATE
   --- 
   -- @param #AI_DESIGNATE self
   function AI_DESIGNATE:MenuDesignate( Index )
+
+    self:E("in designate")
+
+    self:__Designate( 1, Index )    
+  end
+
+  --- 
+  -- @param #AI_DESIGNATE self
+  -- @return #AI_DESIGNATE
+  function AI_DESIGNATE:onafterDesignate( From, Event, To, Index )
+  
+
+    local TargetSetUnit = self.Detection:GetDetectedSet( Index )
+  
+    TargetSetUnit:ForEachUnit(
+      --- @param Wrapper.Unit#UNIT SmokeUnit
+      function( SmokeUnit )
+        self:E("In procedure")
+        --if math.random( 1, ( 100 * TargetSetUnit:Count() ) / 100 ) <= 100 then
+          SCHEDULER:New( self,
+            function()
+              if SmokeUnit:IsAlive() then
+                SmokeUnit:Smoke( SMOKECOLOR.Red, 150 )
+              end
+            end, {}, math.random( 10, 60 ) 
+          )
+        --end
+      end
+    )
     
+
   end
 
 end
